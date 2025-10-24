@@ -435,7 +435,7 @@ if __name__ == "__main__":
         curator.create_all_datasets()
         
         print("\n" + "="*60)
-        print("𐔌՞. .՞𐦯...RUNNING...𐔌՞. .՞𐦯")
+        print("ฅ^>⩊<^ ฅ RUNNING... ฅ^>⩊<^ ฅ")
         print("="*60)
         
         # Insert your print here guys for correlation and descriptive analyses
