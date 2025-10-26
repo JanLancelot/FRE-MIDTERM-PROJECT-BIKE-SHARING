@@ -867,13 +867,15 @@ class CorrelationAnalyzer:
         
         return high_corr_pairs
     
-    def visualize_correlation_heatmap(self, save_path='correlation_heatmap.png'):
-        plt.figure(figsize=(12, 10))
+    def visualize_correlation_heatmap(self, save_path='./correlation_graphs/correlation_heatmap.png'):
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
         
-        mask = np.triu(np.ones_like(self.correlation_matrix, dtype=bool))
+        plt.figure(figsize=(12, 10))
+
+        # mask = np.triu(np.ones_like(self.correlation_matrix, dtype=bool))
         
         sns.heatmap(self.correlation_matrix, 
-                    mask=mask,
+                    # mask=mask,
                     annot=True, 
                     fmt='.2f', 
                     cmap='coolwarm', 
@@ -889,7 +891,9 @@ class CorrelationAnalyzer:
         print(f"\n✓ Correlation heatmap saved: {save_path}")
         plt.close()
     
-    def visualize_rental_correlations(self, save_path='rental_correlations.png'):
+    def visualize_rental_correlations(self, save_path='./correlation_graphs/rental_correlations.png'):
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        
         cnt_corr = self.correlation_matrix['cnt'].drop('cnt').sort_values()
         
         plt.figure(figsize=(10, 8))
