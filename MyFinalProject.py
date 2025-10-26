@@ -30,8 +30,127 @@ class BikeDataCurator:
             return False
     
     def create_correlation_dataset(self, output_path='correlation.csv'):
-        # Dito ka Jek
-        return False
+
+        if self.main_data is None:
+            print("✗ Please load data first")
+            return False
+        
+        print("\n=== Creating Correlation Dataset ===")
+        
+        correlation_vars = [
+            'temp',
+            'atemp',
+            'hum',
+            'windspeed',
+            'season',
+            'mnth',
+            'hr',
+            'weekday',
+            'holiday',
+            'workingday',
+            'weathersit',
+            'casual',
+            'registered',
+            'cnt'
+        ]
+        
+        self.correlation_data = self.main_data[correlation_vars].copy()
+        initial_count = len(self.correlation_data)
+        print(f"Initial records: {initial_count}")
+        
+        print("\n=== Cleaning Correlation Data ===")
+        
+        missing_before = self.correlation_data.isnull().sum()
+        if missing_before.sum() > 0:
+            print("\n⚠ Missing values detected:")
+            print(missing_before[missing_before > 0])
+            self.correlation_data = self.correlation_data.dropna()
+            print(f"✓ Removed {initial_count - len(self.correlation_data)} rows with missing values")
+        else:
+            print("✓ No missing values found")
+        
+        duplicates = self.correlation_data.duplicated().sum()
+        if duplicates > 0:
+            self.correlation_data = self.correlation_data.drop_duplicates()
+            print(f"✓ Removed {duplicates} duplicate rows")
+        else:
+            print("✓ No duplicate rows found")
+        
+        print("\n=== Validating Normalized Variables ===")
+        normalized_vars = ['temp', 'atemp', 'hum', 'windspeed']
+        for var in normalized_vars:
+            invalid = self.correlation_data[(self.correlation_data[var] < 0) | 
+                                            (self.correlation_data[var] > 1)]
+            if len(invalid) > 0:
+                print(f"⚠ Found {len(invalid)} invalid {var} values")
+                self.correlation_data = self.correlation_data[
+                    (self.correlation_data[var] >= 0) & 
+                    (self.correlation_data[var] <= 1)
+                ]
+        print("✓ Normalized variables validated")
+        
+        print("\n=== Validating Categorical Variables ===")
+        validations = {
+            'season': (1, 4),
+            'mnth': (1, 12),
+            'hr': (0, 23),
+            'weekday': (0, 6),
+            'holiday': (0, 1),
+            'workingday': (0, 1),
+            'weathersit': (1, 4)
+        }
+        
+        for var, (min_val, max_val) in validations.items():
+            invalid = self.correlation_data[
+                (self.correlation_data[var] < min_val) | 
+                (self.correlation_data[var] > max_val)
+            ]
+            if len(invalid) > 0:
+                print(f"⚠ Found {len(invalid)} invalid {var} values")
+                self.correlation_data = self.correlation_data[
+                    (self.correlation_data[var] >= min_val) & 
+                    (self.correlation_data[var] <= max_val)
+                ]
+        print("✓ Categorical variables validated")
+        
+        print("\n=== Detecting Outliers in Rental Counts ===")
+        for col in ['cnt', 'casual', 'registered']:
+            Q1 = self.correlation_data[col].quantile(0.25)
+            Q3 = self.correlation_data[col].quantile(0.75)
+            IQR = Q3 - Q1
+            lower = Q1 - 3 * IQR
+            upper = Q3 + 3 * IQR
+            
+            outliers = self.correlation_data[
+                (self.correlation_data[col] < lower) | 
+                (self.correlation_data[col] > upper)
+            ]
+            
+            if len(outliers) > 0:
+                print(f"⚠ Found {len(outliers)} outliers in {col}")
+                self.correlation_data = self.correlation_data[
+                    (self.correlation_data[col] >= lower) & 
+                    (self.correlation_data[col] <= upper)
+                ]
+        
+        final_count = len(self.correlation_data)
+        removed_count = initial_count - final_count
+        
+        print("\n" + "="*50)
+        print("CORRELATION PREPROCESSING SUMMARY")
+        print("="*50)
+        print(f"Initial records:    {initial_count}")
+        print(f"Final records:      {final_count}")
+        print(f"Removed records:    {removed_count} ({(removed_count/initial_count)*100:.2f}%)")
+        print(f"Data quality:       {(final_count/initial_count)*100:.2f}%")
+        print("="*50)
+        
+        self.correlation_data.to_csv(output_path, index=False)
+        print(f"\n✓ Correlation dataset created: {output_path}")
+        print(f"  Variables: {len(correlation_vars)}")
+        print(f"  Records: {final_count}")
+        
+        return True
     
     def create_descriptive_dataset(self, output_path='descriptive.csv'):
         # Dito ka Elea
@@ -217,17 +336,204 @@ class BikeDataCurator:
     
     def create_all_datasets(self):
         print("\n=== Creating Sub-Datasets ===")
-        # self.create_correlation_dataset()
+        self.create_correlation_dataset()
         # self.create_descriptive_dataset()
         self.create_predictive_dataset()
         print("=== Dataset creation complete ===\n")
 
 
 class CorrelationAnalyzer:
-    
     def __init__(self, data):
-
         self.data = data
+        self.correlation_matrix = None
+        
+    def compute_correlations(self):
+        print("\n=== Computing Correlation Matrix ===")
+        self.correlation_matrix = self.data.corr(method='pearson')
+        print("✓ Correlation matrix computed")
+        return self.correlation_matrix
+    
+    def analyze_environmental_correlations(self):
+
+        print("\n=== Environmental Correlations with Rentals ===")
+        print("Objective: Identify how weather conditions influence bike rental demand")
+        print("Type: Linear Pearson correlation (continuous variables)")
+        print()
+        
+        env_vars = ['temp', 'atemp', 'hum', 'windspeed']
+        target = 'cnt'
+        
+        results = []
+        for var in env_vars:
+            corr = self.correlation_matrix.loc[var, target]
+            results.append({
+                'Variable': var,
+                'Correlation': corr,
+                'Strength': self._classify_strength(abs(corr)),
+                'Direction': 'Positive' if corr > 0 else 'Negative'
+            })
+        
+        df_results = pd.DataFrame(results)
+        print(df_results.to_string(index=False))
+        
+        return df_results
+    
+    def analyze_temporal_correlations(self):
+        print("\n=== Temporal Correlations with Rentals ===")
+        print("Objective: Identify how time-based factors influence rental patterns")
+        print("Type: Linear Pearson correlation (ordinal/binary variables)")
+        print()
+        
+        temp_vars = ['hr', 'weekday', 'mnth', 'season', 'workingday', 'holiday']
+        target = 'cnt'
+        
+        results = []
+        for var in temp_vars:
+            corr = self.correlation_matrix.loc[var, target]
+            results.append({
+                'Variable': var,
+                'Correlation': corr,
+                'Strength': self._classify_strength(abs(corr)),
+                'Direction': 'Positive' if corr > 0 else 'Negative'
+            })
+        
+        df_results = pd.DataFrame(results)
+        print(df_results.to_string(index=False))
+        
+        return df_results
+    
+    def analyze_user_type_correlations(self):
+        print("\n=== User Type Correlations ===")
+        print("Objective: Understand relationship between casual and registered users")
+        print("Type: Linear Pearson correlation")
+        print()
+        
+        corr_casual_registered = self.correlation_matrix.loc['casual', 'registered']
+        corr_casual_total = self.correlation_matrix.loc['casual', 'cnt']
+        corr_registered_total = self.correlation_matrix.loc['registered', 'cnt']
+        
+        print(f"Casual vs Registered:     {corr_casual_registered:>7.4f} ({self._classify_strength(abs(corr_casual_registered))})")
+        print(f"Casual vs Total:          {corr_casual_total:>7.4f} ({self._classify_strength(abs(corr_casual_total))})")
+        print(f"Registered vs Total:      {corr_registered_total:>7.4f} ({self._classify_strength(abs(corr_registered_total))})")
+        
+        return {
+            'casual_registered': corr_casual_registered,
+            'casual_total': corr_casual_total,
+            'registered_total': corr_registered_total
+        }
+    
+    def find_strongest_correlations(self, threshold=0.3):
+        print(f"\n=== Strongest Correlations with Rentals (|r| > {threshold}) ===")
+        
+        cnt_corr = self.correlation_matrix['cnt'].drop('cnt').abs().sort_values(ascending=False)
+        strong_corr = cnt_corr[cnt_corr > threshold]
+        
+        print(f"Found {len(strong_corr)} variables with strong correlations:")
+        for var, corr in strong_corr.items():
+            direction = 'Positive' if self.correlation_matrix.loc[var, 'cnt'] > 0 else 'Negative'
+            print(f"  {var:15s} r={self.correlation_matrix.loc[var, 'cnt']:>7.4f} ({direction}, {self._classify_strength(corr)})")
+        
+        return strong_corr
+    
+    def analyze_multicollinearity(self):
+        print("\n=== Multicollinearity Analysis ===")
+        print("Objective: Identify highly correlated predictor variables")
+        print("Threshold: |r| > 0.8 indicates potential multicollinearity")
+        print()
+        
+        high_corr_pairs = []
+        for i in range(len(self.correlation_matrix.columns)):
+            for j in range(i+1, len(self.correlation_matrix.columns)):
+                var1 = self.correlation_matrix.columns[i]
+                var2 = self.correlation_matrix.columns[j]
+                corr = self.correlation_matrix.iloc[i, j]
+                
+                if abs(corr) > 0.8 and var1 != 'cnt' and var2 != 'cnt':
+                    high_corr_pairs.append({
+                        'Variable 1': var1,
+                        'Variable 2': var2,
+                        'Correlation': corr
+                    })
+        
+        if high_corr_pairs:
+            df_pairs = pd.DataFrame(high_corr_pairs).sort_values('Correlation', 
+                                                                   key=abs, 
+                                                                   ascending=False)
+            print(df_pairs.to_string(index=False))
+        else:
+            print("✓ No significant multicollinearity detected")
+        
+        return high_corr_pairs
+    
+    def visualize_correlation_heatmap(self, save_path='correlation_heatmap.png'):
+        plt.figure(figsize=(12, 10))
+        
+        mask = np.triu(np.ones_like(self.correlation_matrix, dtype=bool))
+        
+        sns.heatmap(self.correlation_matrix, 
+                    mask=mask,
+                    annot=True, 
+                    fmt='.2f', 
+                    cmap='coolwarm', 
+                    center=0,
+                    square=True,
+                    linewidths=0.5,
+                    cbar_kws={"shrink": 0.8})
+        
+        plt.title('Correlation Matrix - Bike Sharing Variables', 
+                  fontsize=14, fontweight='bold', pad=20)
+        plt.tight_layout()
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"\n✓ Correlation heatmap saved: {save_path}")
+        plt.close()
+    
+    def visualize_rental_correlations(self, save_path='rental_correlations.png'):
+        cnt_corr = self.correlation_matrix['cnt'].drop('cnt').sort_values()
+        
+        plt.figure(figsize=(10, 8))
+        colors = ['red' if x < 0 else 'green' for x in cnt_corr.values]
+        cnt_corr.plot(kind='barh', color=colors, edgecolor='black', linewidth=0.5)
+        
+        plt.axvline(x=0, color='black', linestyle='-', linewidth=0.8)
+        plt.xlabel('Correlation Coefficient', fontsize=12)
+        plt.ylabel('Variables', fontsize=12)
+        plt.title('Correlation with Total Bike Rentals', 
+                  fontsize=14, fontweight='bold')
+        plt.grid(axis='x', alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"✓ Rental correlations chart saved: {save_path}")
+        plt.close()
+    
+    def generate_correlation_report(self):
+        print("\n" + "="*60)
+        print("CORRELATION ANALYSIS REPORT")
+        print("="*60)
+        
+        self.compute_correlations()
+        self.analyze_environmental_correlations()
+        self.analyze_temporal_correlations()
+        self.analyze_user_type_correlations()
+        self.find_strongest_correlations()
+        self.analyze_multicollinearity()
+        
+        print("\n" + "="*60)
+        print("✓ Correlation analysis complete!")
+        print("="*60)
+    
+    @staticmethod
+    def _classify_strength(corr):
+        abs_corr = abs(corr)
+        if abs_corr >= 0.7:
+            return "Very Strong"
+        elif abs_corr >= 0.5:
+            return "Strong"
+        elif abs_corr >= 0.3:
+            return "Moderate"
+        elif abs_corr >= 0.1:
+            return "Weak"
+        else:
+            return "Very Weak"
 
 class DescriptiveAnalyzer:
     
@@ -365,62 +671,62 @@ class PredictiveAnalyzer:
 
 if __name__ == "__main__":
     print(""" ###%%%%%####%%%%%%#%%#%%%%%%%%#%%%%%**====%++*%**#*#*****+#%#***++*+*#######%%####%#####%#%%%@@@@%%##==#
-#######%*###%%###%#%%%%#########*#*##*====-=+**####+**#++#######+*+#*########%#%%%%%###%#%#######*+=-=-:
-##########*##############%#########**+----#%%#*****###*#**############%%%%%%###%##%%%#%%@%%%%%%%#%*#**##
-@%######*##*###%###%%%%%%#%###%%####*+----%###***###%%%##%%%####*####%##%##%%%%%%###%%%%%#%%%##%##*+****
-########%####%#%###%####%####%#####**+----*###***###%#%#####*###*#####%%%%%#####%%%%%%%%%%%%%%###%##***#
-#################%#####*####*#**####*+::::*##%%%%#%###%##%%%@@%#####%#%%%###%%##%#%%%%%%####%####****++*
-#########%%#*###***##########%%#%###+=::::*####%%%##%%%%@@@###%%#########%%%#%#%#%%##%######%###*##*****
-+*###%*#*###%#######%#%#%#%%%########+::::*###****##*##@@*----:+%####%#%#####%%%%%%%%############%######
---==+#+++*#+**%%%#####%#=+*##%%%@@@@@%+:::*##%%%%%%%%%#%%=##**#=####%%#%%%%%%%##%%%#%#%#%%%%@@@%%%%%%###
-*#%*--:-*#**#**+==-=+=++*+*##*=%@%+=-=*+::*%#%%%%%%%#%#==---=--.-###%%%%#%#%%%%%%%%%%%%%%%%%%%%%%@%%%@%%
-=*+--:..:--=====-:..::--==**++=%@+=-::-+::#%%%%%%%%%%%%%*++*#*+-*##%#######%%%%%%%%%%%%%%%%%@@@@@@@%####
-+*=--...=+====---:.:--:-=+++=-:++=++:=:-::+#%%#%%%%%####*+*+*+=#%%#%%%##%%%%%%%%%@@@@@@@@@@@@@%%#%%@@@@@
-+=====++==+=---:--::------===+=--+=++--:::-==*+*#%%%%##=#=+##=#%%%%%%%%%%%%%%%%%%%%@@@@@%#*#%@@@@@@@@@@@
-=-+%##@*+#@%=---.....----*===*%*-=**+=-::::-===++**+**#%+%%#+#*+*##%%%%%%%#######%%%%+===#@@@@@@@@@@@@@@
-@%#@%%%#*#%%*+:.-=-==+=+###%%%%##:+#*:::::=+#%******+##%%*#@*%=*#*+*%%#%%%##*+=-:.......:*@@@@@@@@@@@@@@
-@@@%##%%#%@@@@%%%%%%%%%%%%%%**#%+@++=+::::*@@@@%@%%*##%%%%#%@#=%*%%#+###=:...............=@@@@@@@@@@@@@@
-@@%%##%%#%%%%%%%%%%%%%%%%%%#*###%+@%=*-**=*@@@@@@%##*+*%@@#@%=+@%%@%*++=:.....-====......-@@@@@@@@@@@@@@
-@%@@%#%%%%%%%%#############%##%%%+*%#-:**###@@@@@%##=:-*@@#%##**##@@%++=..-=--:...-......-@@@@@@@@@@@@@@
-@%%@%#%%#@@@@@@@@@@@@@@@@@@%##*#%#*%+:-##%%*#@@@@%#+:...%@#=+%#**#@@@*:...:.......-......-@@@@@@@@@@@@@@
-@#%@%####@@@@@@@@@@@@@@@@@@%%#+=*%*#**++#@@%**@@@%@@+:...#**%%%@@%%##*-:........:.-......-@@@@@@@@@@@@@@
-@#%@%****@@@@@@@@@@@@@@@@@@@#+:.:#+=+%@@%%@@#**@@%%@@+:...+%%%%@@%%#*+:=:.........-......:@@@@@%#*++=---
-@*#@%****@@@@@@@@@@@@@@@@@@%@@=:..+*#%%@%%%@*..-%%@@@@*-:..=%%%%%%@#++:.-=-:..::..-........::-:::::::...
-%*#@#****%@@@@@@@@@@@@@@@@@%@@@-...*%%%@@*+@@=...%@@@@#*+:...:-*@@@#++:...:+=::----.........::::::::....
-%*#@#***+%@@@@@@@@@@@@@@@@@@@@@#-..:*##@@*+@@%*=%@@@###%@@#:-=-:-*==-:.....-===-*=..........::::::::....
-:.:-:::::-===+++++++***###%@@#**%+:..*##%++@@@@@@@*++*:.:#%#*+*#-++*+=-=.......*:.::........:::::::.....
-..........................-@#=+%:....--:*==@@@@%+**++#-..*##%@###%@#*+.::.......:=.*=.......:::::::.....
-..........................-#*=*#*..=*****+=@%@%+++*==*=+*%@@%%@@*=##*+:..-:===-::.--........:::::::::...
-::::::::.................:+#**=....+%@@@%%+@%#++*##**......-+=-==....:....-=...............:::::::::....
-.........................+#%#*:......=+==::###*%@%%%:.......*%*=-::.......-:..............:::::::::.....
-........................+#@@@%::.......--...+@@%**@@-........=#*+++-:......:.......==-----====---------:
-.......................:#@#%@@*=::..:...-::.:#%#*%@@+:.........++++=-::...:++:-=...=-----------=-:::::::
-........................%###@@@#=---==++*+=--*%*#%@@@#=:.......-***+*+=-===#%==-...==----------=-----:::
-........................###%%+.-:===+++*##+=--*#%@@@#%@#--------====**%%#@@@*=%@@@@*=-------:::::::::...
-........................-#%@=.#=:-=+++=-=*+*+-==-#@@%#%--==-=--+***++#@@%**+@#**+*-=+++=+====-----::::::
-......................*%%%%@*..:-+*++==--=%@##+#*+@@@@#:-:-===+%%%%@@******@@##@++:+%%%%%%#####*++======
-...................:#*:.....+%--+*=-===-===%%##%@%*@@#=:--==-=#@@%******+%@@***@%##%%%%#**#%%%%##%##****
-..................-#=......:+-++-=**++====#@@@@*====+=:--=+==%+-:-+*##++#%=-=%%*%%#*#*##**%#*#@@@%######
-.................-*+...:...#+-=+**=@*++#@@@%%%#=:::::::-=+=-:::::+**++*%+..:#%%#@@=:::::::::*%*=---=----
-.................**.......=*%%##%#+#@@*+=#%%%#=...:+%#-==---:.::=-=+*#@=:.-%###.**..:::::::-:-*%*:::::::
-................-*=......*:.*@@@@@#+@+--#@%%%*.:*@%+::-=--=-::%#*+*#%%:.:.%#*-*=-#:.:::::-:::::=%#-:::::
-................-*:...-#%+++-#@@%%%*@#=*%%%%%%@#+:::::=++++=:=@@@@%@%-...*%+:.-#:=*:::::::::::::=@#=::::
-................=*....*@@@@@#+-+#%%@@@#%@%%@#-::::::-*=-=**+-+***@@@@%:.=@*=:::+*-=*-::-------::-*@%----
-................-+:..##@@*==***%%@*#@@@@@@@#====---:*@@@@@#@-::*@%*#@@%+*%+-::::+*:=#----------::-#@*:--
-:---------------++---+*#%=---=--#@@#%@@@@@%#==::::.::%@@@@@@@-#@%+#@#+%@@#+:::-::=#--#+=------::::=%%=--
------------------*=----+%-----:=%@#*#*@@@@@@#%%%%@%@#+@@@%@@@@%+=:::::--%*+--------%#**#+----::----#@*::
------------------=#-=-=**=====+#@++##%**%@@@#::-----=:+%%%%%@@%*::::::..##+:::::::-=##+#-:::.::::::#@%:.
-----========-=====+#+====--=-=%@=.......:*%@@%*=:::...:=*%@%*@-.........+%=:....:::::..::..:::::..:#@%..
-:-:::::::::::::::::-#*==-::-*@@=::::::.::=+*++=::::-----=##%%+..........:@+-...:......:............#@#..
-::------------------=+%@%%@@%-:......:::::::::::::::::::..::-............=%=......:...:...........-%@+..
-::--------::::::---::::::--==--::---=++++====-::::::::::::::::::..........**......................+@@...
-::::..........::::::::::::::::---:::--------:::....................::......#+......:.............=@@+...
-.......................:::::::::::::::::::::----=---------=========--::::..:%*..................-%@*....
-...................................::::::::::::::---==---::::------:::::::...+#-...............+%@*.....
-......................................:::::::::::::::::::::..::::::............#%=....::.....+%@@:......
-..........................................::::::::::..............::::::::::::::-#@%*+===+*#@@%=........
-...................................................:::....................:........:-+#@@@#+:...........
-...........................................................................................::.....:::::-""")
+    #######%*###%%###%#%%%%#########*#*##*====-=+**####+**#++#######+*+#*########%#%%%%%###%#%#######*+=-=-:
+    ##########*##############%#########**+----#%%#*****###*#**############%%%%%%###%##%%%#%%@%%%%%%%#%*#**##
+    @%######*##*###%###%%%%%%#%###%%####*+----%###***###%%%##%%%####*####%##%##%%%%%%###%%%%%#%%%##%##*+****
+    ########%####%#%###%####%####%#####**+----*###***###%#%#####*###*#####%%%%%#####%%%%%%%%%%%%%%###%##***#
+    #################%#####*####*#**####*+::::*##%%%%#%###%##%%%@@%#####%#%%%###%%##%#%%%%%%####%####****++*
+    #########%%#*###***##########%%#%###+=::::*####%%%##%%%%@@@###%%#########%%%#%#%#%%##%######%###*##*****
+    +*###%*#*###%#######%#%#%#%%%########+::::*###****##*##@@*----:+%####%#%#####%%%%%%%%############%######
+    --==+#+++*#+**%%%#####%#=+*##%%%@@@@@%+:::*##%%%%%%%%%#%%=##**#=####%%#%%%%%%%##%%%#%#%#%%%%@@@%%%%%%###
+    *#%*--:-*#**#**+==-=+=++*+*##*=%@%+=-=*+::*%#%%%%%%%#%#==---=--.-###%%%%#%#%%%%%%%%%%%%%%%%%%%%%%@%%%@%%
+    =*+--:..:--=====-:..::--==**++=%@+=-::-+::#%%%%%%%%%%%%%*++*#*+-*##%#######%%%%%%%%%%%%%%%%%@@@@@@@%####
+    +*=--...=+====---:.:--:-=+++=-:++=++:=:-::+#%%#%%%%%####*+*+*+=#%%#%%%##%%%%%%%%%@@@@@@@@@@@@@%%#%%@@@@@
+    +=====++==+=---:--::------===+=--+=++--:::-==*+*#%%%%##=#=+##=#%%%%%%%%%%%%%%%%%%%%@@@@@%#*#%@@@@@@@@@@@
+    =-+%##@*+#@%=---.....----*===*%*-=**+=-::::-===++**+**#%+%%#+#*+*##%%%%%%%#######%%%%+===#@@@@@@@@@@@@@@
+    @%#@%%%#*#%%*+:.-=-==+=+###%%%%##:+#*:::::=+#%******+##%%*#@*%=*#*+*%%#%%%##*+=-:.......:*@@@@@@@@@@@@@@
+    @@@%##%%#%@@@@%%%%%%%%%%%%%%**#%+@++=+::::*@@@@%@%%*##%%%%#%@#=%*%%#+###=:...............=@@@@@@@@@@@@@@
+    @@%%##%%#%%%%%%%%%%%%%%%%%%#*###%+@%=*-**=*@@@@@@%##*+*%@@#@%=+@%%@%*++=:.....-====......-@@@@@@@@@@@@@@
+    @%@@%#%%%%%%%%#############%##%%%+*%#-:**###@@@@@%##=:-*@@#%##**##@@%++=..-=--:...-......-@@@@@@@@@@@@@@
+    @%%@%#%%#@@@@@@@@@@@@@@@@@@%##*#%#*%+:-##%%*#@@@@%#+:...%@#=+%#**#@@@*:...:.......-......-@@@@@@@@@@@@@@
+    @#%@%####@@@@@@@@@@@@@@@@@@%%#+=*%*#**++#@@%**@@@%@@+:...#**%%%@@%%##*-:........:.-......-@@@@@@@@@@@@@@
+    @#%@%****@@@@@@@@@@@@@@@@@@@#+:.:#+=+%@@%%@@#**@@%%@@+:...+%%%%@@%%#*+:=:.........-......:@@@@@%#*++=---
+    @*#@%****@@@@@@@@@@@@@@@@@@%@@=:..+*#%%@%%%@*..-%%@@@@*-:..=%%%%%%@#++:.-=-:..::..-........::-:::::::...
+    %*#@#****%@@@@@@@@@@@@@@@@@%@@@-...*%%%@@*+@@=...%@@@@#*+:...:-*@@@#++:...:+=::----.........::::::::....
+    %*#@#***+%@@@@@@@@@@@@@@@@@@@@@#-..:*##@@*+@@%*=%@@@###%@@#:-=-:-*==-:.....-===-*=..........::::::::....
+    :.:-:::::-===+++++++***###%@@#**%+:..*##%++@@@@@@@*++*:.:#%#*+*#-++*+=-=.......*:.::........:::::::.....
+    ..........................-@#=+%:....--:*==@@@@%+**++#-..*##%@###%@#*+.::.......:=.*=.......:::::::.....
+    ..........................-#*=*#*..=*****+=@%@%+++*==*=+*%@@%%@@*=##*+:..-:===-::.--........:::::::::...
+    ::::::::.................:+#**=....+%@@@%%+@%#++*##**......-+=-==....:....-=...............:::::::::....
+    .........................+#%#*:......=+==::###*%@%%%:.......*%*=-::.......-:..............:::::::::.....
+    ........................+#@@@%::.......--...+@@%**@@-........=#*+++-:......:.......==-----====---------:
+    .......................:#@#%@@*=::..:...-::.:#%#*%@@+:.........++++=-::...:++:-=...=-----------=-:::::::
+    ........................%###@@@#=---==++*+=--*%*#%@@@#=:.......-***+*+=-===#%==-...==----------=-----:::
+    ........................###%%+.-:===+++*##+=--*#%@@@#%@#--------====**%%#@@@*=%@@@@*=-------:::::::::...
+    ........................-#%@=.#=:-=+++=-=*+*+-==-#@@%#%--==-=--+***++#@@%**+@#**+*-=+++=+====-----::::::
+    ......................*%%%%@*..:-+*++==--=%@##+#*+@@@@#:-:-===+%%%%@@******@@##@++:+%%%%%%#####*++======
+    ...................:#*:.....+%--+*=-===-===%%##%@%*@@#=:--==-=#@@%******+%@@***@%##%%%%#**#%%%%##%##****
+    ..................-#=......:+-++-=**++====#@@@@*====+=:--=+==%+-:-+*##++#%=-=%%*%%#*#*##**%#*#@@@%######
+    .................-*+...:...#+-=+**=@*++#@@@%%%#=:::::::-=+=-:::::+**++*%+..:#%%#@@=:::::::::*%*=---=----
+    .................**.......=*%%##%#+#@@*+=#%%%#=...:+%#-==---:.::=-=+*#@=:.-%###.**..:::::::-:-*%*:::::::
+    ................-*=......*:.*@@@@@#+@+--#@%%%*.:*@%+::-=--=-::%#*+*#%%:.:.%#*-*=-#:.:::::-:::::=%#-:::::
+    ................-*:...-#%+++-#@@%%%*@#=*%%%%%%@#+:::::=++++=:=@@@@%@%-...*%+:.-#:=*:::::::::::::=@#=::::
+    ................=*....*@@@@@#+-+#%%@@@#%@%%@#-::::::-*=-=**+-+***@@@@%:.=@*=:::+*-=*-::-------::-*@%----
+    ................-+:..##@@*==***%%@*#@@@@@@@#====---:*@@@@@#@-::*@%*#@@%+*%+-::::+*:=#----------::-#@*:--
+    :---------------++---+*#%=---=--#@@#%@@@@@%#==::::.::%@@@@@@@-#@%+#@#+%@@#+:::-::=#--#+=------::::=%%=--
+    -----------------*=----+%-----:=%@#*#*@@@@@@#%%%%@%@#+@@@%@@@@%+=:::::--%*+--------%#**#+----::----#@*::
+    -----------------=#-=-=**=====+#@++##%**%@@@#::-----=:+%%%%%@@%*::::::..##+:::::::-=##+#-:::.::::::#@%:.
+    ----========-=====+#+====--=-=%@=.......:*%@@%*=:::...:=*%@%*@-.........+%=:....:::::..::..:::::..:#@%..
+    :-:::::::::::::::::-#*==-::-*@@=::::::.::=+*++=::::-----=##%%+..........:@+-...:......:............#@#..
+    ::------------------=+%@%%@@%-:......:::::::::::::::::::..::-............=%=......:...:...........-%@+..
+    ::--------::::::---::::::--==--::---=++++====-::::::::::::::::::..........**......................+@@...
+    ::::..........::::::::::::::::---:::--------:::....................::......#+......:.............=@@+...
+    .......................:::::::::::::::::::::----=---------=========--::::..:%*..................-%@*....
+    ...................................::::::::::::::---==---::::------:::::::...+#-...............+%@*.....
+    ......................................:::::::::::::::::::::..::::::............#%=....::.....+%@@:......
+    ..........................................::::::::::..............::::::::::::::-#@%*+===+*#@@%=........
+    ...................................................:::....................:........:-+#@@@#+:...........
+    ...........................................................................................::.....:::::-""")
     print("="*60)
     print("GROUP 1 - BIKE SHARING DATA")
     print("MIDTERM PROJECT")
@@ -441,7 +747,24 @@ if __name__ == "__main__":
         print("="*60)
         
         # Insert your print here guys for correlation and descriptive analyses
+
+        # CORRELATION ANALYSIS ----------------------------------
+        print("\n" + "="*60)
+        print("CORRELATION ANALYSIS")
+        print("="*60)
+
+        try:
+            correlation_data = pd.read_csv('correlation.csv')
+            correlator = CorrelationAnalyzer(correlation_data)
+            correlator.generate_correlation_report()
+            correlator.visualize_correlation_heatmap()
+            correlator.visualize_rental_correlations()
+        except FileNotFoundError:
+            print("✗ correlation.csv not found.")
+        except Exception as e:
+            print(f"✗ Error in correlation analysis: {e}")
         
+        # PREDICTIVE ANALYSIS -----------------------------------
         print("\n" + "="*60)
         print("PREDICTIVE ANALYSIS")
         print("="*60)
@@ -472,7 +795,7 @@ if __name__ == "__main__":
         print("="*60)
         print("\nGenerated files:")
         print("  Data files:")
-        # print("    - correlation.csv ✓")
+        print("    - correlation.csv ✓")
         # print("    - descriptive.csv ✓")
         print("    - predictive.csv ✓")
         print("\n  Visualization files:")
