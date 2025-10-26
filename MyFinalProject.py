@@ -6,10 +6,9 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import os
 
 class BikeDataCurator:
-    
     def __init__(self, filepath):
         self.filepath = filepath
         self.main_data = None
@@ -153,8 +152,113 @@ class BikeDataCurator:
         return True
     
     def create_descriptive_dataset(self, output_path='descriptive.csv'):
-        # Dito ka Elea
-        return False
+        if self.main_data is None:
+            print("✗ Please load data first")
+            return False
+
+        print("\n=== Creating Descriptive Dataset ===")
+        df = self.main_data.copy()
+
+        variables = {
+            'dependent': ['cnt', 'casual', 'registered'],
+            'independent': {
+                'temporal': ['hr', 'weekday', 'workingday', 'mnth', 'season', 'yr', 'holiday'],
+                'environmental': ['weathersit', 'temp', 'atemp', 'hum', 'windspeed']
+            }
+        }
+
+        plan_rows = [
+            {'Section': 'PLAN', 'Item': 'Variables Selected - Dependent', 'Details': ', '.join(variables['dependent'])},
+            {'Section': 'PLAN', 'Item': 'Variables Selected - Independent (Temporal)', 'Details': ', '.join(variables['independent']['temporal'])},
+            {'Section': 'PLAN', 'Item': 'Variables Selected - Independent (Environmental)', 'Details': ', '.join(variables['independent']['environmental'])},
+            {'Section': 'PLAN', 'Item': 'Objective', 'Details': 'Understand hourly demand patterns, seasonal/weekday effects, weather impact, and user-type behavior.'},
+            {'Section': 'PLAN', 'Item': 'Theoretical Framework', 'Details': 'Demand Elasticity; Temporal Patterns; Weather–Demand; User Segmentation'},
+            {'Section': 'PLAN', 'Item': 'Type of Analysis', 'Details': 'count, mean, median, mode, std, quartiles, IQR; simple tabulation with percent; comparisons; distributions; outliers'}
+        ]
+        plan_df = pd.DataFrame(plan_rows)
+
+        numeric_cols = [c for c in ['cnt', 'casual', 'registered', 'temp', 'atemp', 'hum', 'windspeed'] if c in df.columns]
+        basic_rows = []
+        for col in numeric_cols:
+            s = df[col].dropna()
+            mode_vals = s.mode()
+            mode_val = mode_vals.iloc[0] if not mode_vals.empty else np.nan
+            q1 = s.quantile(0.25); q3 = s.quantile(0.75)
+            basic_rows.append({
+                'Section': 'BASIC_STATS', 'Variable': col, 'Count': int(s.count()), 'Mean': float(s.mean()),
+                'Median': float(s.median()), 'Mode': float(mode_val) if pd.notnull(mode_val) else np.nan,
+                'Std': float(s.std()), 'Min': float(s.min()), 'Q1': float(q1), 'Q3': float(q3),
+                'Max': float(s.max()), 'Range': float(s.max() - s.min()), 'IQR': float(q3 - q1),
+                'Skew': float(s.skew()), 'Kurt': float(s.kurt())
+            })
+        basic_df = pd.DataFrame(basic_rows)
+
+        tab_rows = []
+        cat_vars = ['season', 'mnth', 'hr', 'weekday', 'holiday', 'workingday', 'weathersit', 'yr']
+        n = len(df)
+        for var in cat_vars:
+            if var not in df.columns:
+                continue
+            counts = df[var].value_counts().sort_index()
+            for key, count in counts.items():
+                pct = (count / n) * 100 if n else 0
+                mean_cnt = df.loc[df[var] == key, 'cnt'].mean() if 'cnt' in df.columns else np.nan
+                tab_rows.append({'Section': 'TABULATION', 'Variable': var, 'Category': int(key) if pd.notnull(key) else key,
+                                 'Count': int(count), 'Percent': round(pct, 2), 'Avg_cnt': round(float(mean_cnt), 2) if pd.notnull(mean_cnt) else np.nan})
+        tabs_df = pd.DataFrame(tab_rows)
+
+        comp_rows = []
+        if 'yr' in df.columns:
+            for y in sorted(df['yr'].unique()):
+                sub = df[df['yr'] == y]['cnt']
+                comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'Year', 'Group': int(y), 'Mean': float(sub.mean()), 'Median': float(sub.median()), 'Std': float(sub.std()), 'N': int(sub.count())})
+        if {'casual', 'registered', 'cnt'}.issubset(df.columns):
+            total = df['cnt'].sum()
+            casual_p = (df['casual'].sum() / total) * 100 if total else 0
+            reg_p = (df['registered'].sum() / total) * 100 if total else 0
+            comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'User Type Share', 'Group': 'Casual_%', 'Value': round(casual_p, 2)})
+            comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'User Type Share', 'Group': 'Registered_%', 'Value': round(reg_p, 2)})
+        if {'workingday', 'cnt'}.issubset(df.columns):
+            for k in sorted(df['workingday'].unique()):
+                sub = df[df['workingday'] == k]['cnt']
+                comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'Workingday', 'Group': int(k), 'Mean': float(sub.mean()), 'Median': float(sub.median()), 'Std': float(sub.std()), 'N': int(sub.count())})
+        if {'holiday', 'cnt'}.issubset(df.columns):
+            for k in sorted(df['holiday'].unique()):
+                sub = df[df['holiday'] == k]['cnt']
+                comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'Holiday', 'Group': int(k), 'Mean': float(sub.mean()), 'Median': float(sub.median()), 'Std': float(sub.std()), 'N': int(sub.count())})
+        comp_df = pd.DataFrame(comp_rows)
+
+        dist_rows = []
+        for var in ['hr', 'weekday', 'mnth']:
+            if var not in df.columns:
+                continue
+            grp = df.groupby(var)['cnt'].agg(['count', 'mean', 'median', 'std'])
+            for k in grp.index:
+                dist_rows.append({'Section': 'DISTRIBUTION', 'Dimension': var, 'Category': int(k),
+                                  'Count': int(grp.loc[k, 'count']), 'Mean': round(float(grp.loc[k, 'mean']), 2),
+                                  'Median': round(float(grp.loc[k, 'median']), 2), 'Std': round(float(grp.loc[k, 'std']), 2)})
+        dist_df = pd.DataFrame(dist_rows)
+
+        if 'cnt' in df.columns:
+            q1 = df['cnt'].quantile(0.25); q3 = df['cnt'].quantile(0.75)
+            iqr = q3 - q1; lb = q1 - 1.5 * iqr; ub = q3 + 1.5 * iqr
+            mask = (df['cnt'] < lb) | (df['cnt'] > ub)
+            out_df = pd.DataFrame([{'Section': 'OUTLIERS', 'Total_Records': int(len(df)), 'Outliers_Count': int(mask.sum()), 'Outliers_%': round(float(mask.mean() * 100), 2), 'Lower_Bound': float(lb), 'Upper_Bound': float(ub), 'Min_cnt': int(df['cnt'].min()), 'Max_cnt': int(df['cnt'].max())}])
+        else:
+            out_df = pd.DataFrame([{'Section': 'OUTLIERS', 'Msg': 'cnt not found'}])
+
+        self.descriptive_data = pd.concat([plan_df, basic_df, tabs_df, comp_df, dist_df, out_df], ignore_index=True, sort=False)
+
+        try:
+            import os
+            os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
+        except Exception:
+            pass
+
+        self.descriptive_data.to_csv(output_path, index=False)
+        print(f"✓ Descriptive dataset created: {output_path}")
+
+        return True
     
     def create_predictive_dataset(self, output_path='predictive.csv'):
         if self.main_data is None:
@@ -334,13 +438,311 @@ class BikeDataCurator:
         
         return True
     
+        def create_descriptive_dataset(self, output_path='descriptive.csv'):
+            if self.main_data is None:
+                print("✗ Please load data first")
+                return False
+
+            print("\n=== Creating Descriptive Dataset ===")
+            df = self.main_data.copy()
+
+            variables = {
+                'dependent': ['cnt', 'casual', 'registered'],
+                'independent': {
+                    'temporal': ['hr', 'weekday', 'workingday', 'mnth', 'season', 'yr', 'holiday'],
+                    'environmental': ['weathersit', 'temp', 'atemp', 'hum', 'windspeed']
+                }
+            }
+
+            plan_rows = [
+                {'Section': 'PLAN', 'Item': 'Variables Selected - Dependent', 'Details': ', '.join(variables['dependent'])},
+                {'Section': 'PLAN', 'Item': 'Variables Selected - Independent (Temporal)', 'Details': ', '.join(variables['independent']['temporal'])},
+                {'Section': 'PLAN', 'Item': 'Variables Selected - Independent (Environmental)', 'Details': ', '.join(variables['independent']['environmental'])},
+                {'Section': 'PLAN', 'Item': 'Objective', 'Details': 'Understand hourly demand patterns, seasonal/weekday effects, weather impact, and user-type behavior.'},
+                {'Section': 'PLAN', 'Item': 'Theoretical Framework', 'Details': 'Demand Elasticity; Temporal Patterns; Weather–Demand; User Segmentation'},
+                {'Section': 'PLAN', 'Item': 'Type of Analysis', 'Details': 'count, mean, median, mode, std, quartiles, IQR; simple tabulation with percent; comparisons; distributions; outliers'}
+            ]
+            plan_df = pd.DataFrame(plan_rows)
+
+            numeric_cols = [c for c in ['cnt', 'casual', 'registered', 'temp', 'atemp', 'hum', 'windspeed'] if c in df.columns]
+            basic_rows = []
+            for col in numeric_cols:
+                s = df[col].dropna()
+                mode_vals = s.mode()
+                mode_val = mode_vals.iloc[0] if not mode_vals.empty else np.nan
+                q1 = s.quantile(0.25); q3 = s.quantile(0.75)
+                basic_rows.append({
+                    'Section': 'BASIC_STATS', 'Variable': col, 'Count': int(s.count()), 'Mean': float(s.mean()),
+                    'Median': float(s.median()), 'Mode': float(mode_val) if pd.notnull(mode_val) else np.nan,
+                    'Std': float(s.std()), 'Min': float(s.min()), 'Q1': float(q1), 'Q3': float(q3),
+                    'Max': float(s.max()), 'Range': float(s.max() - s.min()), 'IQR': float(q3 - q1),
+                    'Skew': float(s.skew()), 'Kurt': float(s.kurt())
+                })
+            basic_df = pd.DataFrame(basic_rows)
+
+            tab_rows = []
+            cat_vars = ['season', 'mnth', 'hr', 'weekday', 'holiday', 'workingday', 'weathersit', 'yr']
+            n = len(df)
+            for var in cat_vars:
+                if var not in df.columns:
+                    continue
+                counts = df[var].value_counts().sort_index()
+                for key, count in counts.items():
+                    pct = (count / n) * 100 if n else 0
+                    mean_cnt = df.loc[df[var] == key, 'cnt'].mean() if 'cnt' in df.columns else np.nan
+                    tab_rows.append({'Section': 'TABULATION', 'Variable': var, 'Category': int(key) if pd.notnull(key) else key,
+                                    'Count': int(count), 'Percent': round(pct, 2), 'Avg_cnt': round(float(mean_cnt), 2) if pd.notnull(mean_cnt) else np.nan})
+            tabs_df = pd.DataFrame(tab_rows)
+
+            comp_rows = []
+            if 'yr' in df.columns:
+                for y in sorted(df['yr'].unique()):
+                    sub = df[df['yr'] == y]['cnt']
+                    comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'Year', 'Group': int(y), 'Mean': float(sub.mean()), 'Median': float(sub.median()), 'Std': float(sub.std()), 'N': int(sub.count())})
+            if {'casual', 'registered', 'cnt'}.issubset(df.columns):
+                total = df['cnt'].sum()
+                casual_p = (df['casual'].sum() / total) * 100 if total else 0
+                reg_p = (df['registered'].sum() / total) * 100 if total else 0
+                comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'User Type Share', 'Group': 'Casual_%', 'Value': round(casual_p, 2)})
+                comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'User Type Share', 'Group': 'Registered_%', 'Value': round(reg_p, 2)})
+            if {'workingday', 'cnt'}.issubset(df.columns):
+                for k in sorted(df['workingday'].unique()):
+                    sub = df[df['workingday'] == k]['cnt']
+                    comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'Workingday', 'Group': int(k), 'Mean': float(sub.mean()), 'Median': float(sub.median()), 'Std': float(sub.std()), 'N': int(sub.count())})
+            if {'holiday', 'cnt'}.issubset(df.columns):
+                for k in sorted(df['holiday'].unique()):
+                    sub = df[df['holiday'] == k]['cnt']
+                    comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'Holiday', 'Group': int(k), 'Mean': float(sub.mean()), 'Median': float(sub.median()), 'Std': float(sub.std()), 'N': int(sub.count())})
+            comp_df = pd.DataFrame(comp_rows)
+
+            dist_rows = []
+            for var in ['hr', 'weekday', 'mnth']:
+                if var not in df.columns:
+                    continue
+                grp = df.groupby(var)['cnt'].agg(['count', 'mean', 'median', 'std'])
+                for k in grp.index:
+                    dist_rows.append({'Section': 'DISTRIBUTION', 'Dimension': var, 'Category': int(k),
+                                    'Count': int(grp.loc[k, 'count']), 'Mean': round(float(grp.loc[k, 'mean']), 2),
+                                    'Median': round(float(grp.loc[k, 'median']), 2), 'Std': round(float(grp.loc[k, 'std']), 2)})
+            dist_df = pd.DataFrame(dist_rows)
+
+            if 'cnt' in df.columns:
+                q1 = df['cnt'].quantile(0.25); q3 = df['cnt'].quantile(0.75)
+                iqr = q3 - q1; lb = q1 - 1.5 * iqr; ub = q3 + 1.5 * iqr
+                mask = (df['cnt'] < lb) | (df['cnt'] > ub)
+                out_df = pd.DataFrame([{'Section': 'OUTLIERS', 'Total_Records': int(len(df)), 'Outliers_Count': int(mask.sum()), 'Outliers_%': round(float(mask.mean() * 100), 2), 'Lower_Bound': float(lb), 'Upper_Bound': float(ub), 'Min_cnt': int(df['cnt'].min()), 'Max_cnt': int(df['cnt'].max())}])
+            else:
+                out_df = pd.DataFrame([{'Section': 'OUTLIERS', 'Msg': 'cnt not found'}])
+
+            self.descriptive_data = pd.concat([plan_df, basic_df, tabs_df, comp_df, dist_df, out_df], ignore_index=True, sort=False)
+
+            try:
+                import os
+                os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
+            except Exception:
+                pass
+
+            self.descriptive_data.to_csv(output_path, index=False)
+            print(f"✓ Descriptive dataset created: {output_path}")
+
+            return True
+
+    def create_descriptive_visualizations(self, output_dir='descriptive_charts'):
+        if self.main_data is None:
+            print("✗ Please load data first")
+            return False
+        os.makedirs(output_dir, exist_ok=True)
+
+        df = self.main_data.copy()
+
+        print(f"\n=== Visualizing Descriptive Charts ===")
+
+        saved = []
+
+        # Histogram: Distribution of hourly cnt
+        try:
+            fig, ax = plt.subplots(figsize=(8, 5))
+            ax.hist(df['cnt'], bins=30, color='#69b3a2', edgecolor='black')
+            ax.set_title('Distribution of Hourly Rentals (cnt)')
+            ax.set_xlabel('cnt')
+            ax.set_ylabel('Frequency')
+            fig.tight_layout()
+            p = os.path.join(output_dir, '01_hist_cnt.png')
+            fig.savefig(p, dpi=200, bbox_inches='tight'); plt.close(fig)
+            saved.append(p); print(f"✓ Saved: {p}")
+        except Exception as e:
+            print(f"! Histogram failed: {e}")
+
+        # Bar: Average cnt by hr
+        try:
+            fig, ax = plt.subplots(figsize=(9, 5))
+            grp = df.groupby('hr')['cnt'].mean()
+            ax.bar(grp.index, grp.values, color='#4c72b0', edgecolor='black')
+            ax.set_title('Average Rentals by Hour (hr)')
+            ax.set_xlabel('Hour')
+            ax.set_ylabel('Average cnt')
+            fig.tight_layout()
+            p = os.path.join(output_dir, '02_bar_avg_by_hr.png')
+            fig.savefig(p, dpi=200, bbox_inches='tight'); plt.close(fig)
+            saved.append(p); print(f"✓ Saved: {p}")
+        except Exception as e:
+            print(f"! Bar hr failed: {e}")
+
+        # Bar: Average cnt by weekday
+        try:
+            fig, ax = plt.subplots(figsize=(9, 5))
+            grp = df.groupby('weekday')['cnt'].mean()
+            ax.bar(grp.index, grp.values, color='#55a868', edgecolor='black')
+            ax.set_title('Average Rentals by Weekday (0=Sun)')
+            ax.set_xlabel('Weekday (0–6)')
+            ax.set_ylabel('Average cnt')
+            ax.set_xticks(range(7)); ax.set_xticklabels(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'])
+            fig.tight_layout()
+            p = os.path.join(output_dir, '03_bar_avg_by_weekday.png')
+            fig.savefig(p, dpi=200, bbox_inches='tight'); plt.close(fig)
+            saved.append(p); print(f"✓ Saved: {p}")
+        except Exception as e:
+            print(f"! Bar weekday failed: {e}")
+
+        # Bar: Average cnt by month
+        try:
+            fig, ax = plt.subplots(figsize=(9, 5))
+            grp = df.groupby('mnth')['cnt'].mean()
+            ax.bar(grp.index, grp.values, color='#c44e52', edgecolor='black')
+            ax.set_title('Average Rentals by Month')
+            ax.set_xlabel('Month (1–12)')
+            ax.set_ylabel('Average cnt')
+            fig.tight_layout()
+            p = os.path.join(output_dir, '04_bar_avg_by_month.png')
+            fig.savefig(p, dpi=200, bbox_inches='tight'); plt.close(fig)
+            saved.append(p); print(f"✓ Saved: {p}")
+        except Exception as e:
+            print(f"! Bar month failed: {e}")
+
+        # Bar: Average cnt by season
+        try:
+            fig, ax = plt.subplots(figsize=(7, 5))
+            grp = df.groupby('season')['cnt'].mean()
+            labels_map = {1:'Spring',2:'Summer',3:'Fall',4:'Winter'}
+            labels = [labels_map.get(i, str(i)) for i in grp.index]
+            ax.bar(range(len(grp)), grp.values, color='#8172b3', edgecolor='black')
+            ax.set_xticks(range(len(grp))); ax.set_xticklabels(labels)
+            ax.set_title('Average Rentals by Season')
+            ax.set_ylabel('Average cnt')
+            fig.tight_layout()
+            p = os.path.join(output_dir, '05_bar_avg_by_season.png')
+            fig.savefig(p, dpi=200, bbox_inches='tight'); plt.close(fig)
+            saved.append(p); print(f"✓ Saved: {p}")
+        except Exception as e:
+            print(f"! Bar season failed: {e}")
+
+        # Bar: Average cnt by weathersit
+        try:
+            fig, ax = plt.subplots(figsize=(8, 5))
+            grp = df.groupby('weathersit')['cnt'].mean()
+            weather_map = {1:'Clear',2:'Mist/Cloudy',3:'Light Rain',4:'Heavy Rain'}
+            labels = [weather_map.get(i, str(i)) for i in grp.index]
+            ax.bar(range(len(grp)), grp.values, color='#937860', edgecolor='black')
+            ax.set_xticks(range(len(grp))); ax.set_xticklabels(labels, rotation=15)
+            ax.set_title('Average Rentals by Weather')
+            ax.set_ylabel('Average cnt')
+            fig.tight_layout()
+            p = os.path.join(output_dir, '06_bar_avg_by_weathersit.png')
+            fig.savefig(p, dpi=200, bbox_inches='tight'); plt.close(fig)
+            saved.append(p); print(f"✓ Saved: {p}")
+        except Exception as e:
+            print(f"! Bar weather failed: {e}")
+
+        # Scatter: temp vs cnt
+        try:
+            fig, ax = plt.subplots(figsize=(6, 5))
+            ax.scatter(df['temp'], df['cnt'], s=8, alpha=0.4, color='#4c72b0')
+            ax.set_title('Temperature vs Rentals')
+            ax.set_xlabel('temp (normalized)')
+            ax.set_ylabel('cnt')
+            fig.tight_layout()
+            p = os.path.join(output_dir, '07_scatter_temp_cnt.png')
+            fig.savefig(p, dpi=200, bbox_inches='tight'); plt.close(fig)
+            saved.append(p); print(f"✓ Saved: {p}")
+        except Exception as e:
+            print(f"! Scatter temp failed: {e}")
+
+        # Scatter: hum vs cnt
+        try:
+            fig, ax = plt.subplots(figsize=(6, 5))
+            ax.scatter(df['hum'], df['cnt'], s=8, alpha=0.4, color='#55a868')
+            ax.set_title('Humidity vs Rentals')
+            ax.set_xlabel('hum (normalized)')
+            ax.set_ylabel('cnt')
+            fig.tight_layout()
+            p = os.path.join(output_dir, '08_scatter_hum_cnt.png')
+            fig.savefig(p, dpi=200, bbox_inches='tight'); plt.close(fig)
+            saved.append(p); print(f"✓ Saved: {p}")
+        except Exception as e:
+            print(f"! Scatter hum failed: {e}")
+
+        # Scatter: windspeed vs cnt
+        try:
+            fig, ax = plt.subplots(figsize=(6, 5))
+            ax.scatter(df['windspeed'], df['cnt'], s=8, alpha=0.4, color='#c44e52')
+            ax.set_title('Windspeed vs Rentals')
+            ax.set_xlabel('windspeed (normalized)')
+            ax.set_ylabel('cnt')
+            fig.tight_layout()
+            p = os.path.join(output_dir, '09_scatter_windspeed_cnt.png')
+            fig.savefig(p, dpi=200, bbox_inches='tight'); plt.close(fig)
+            saved.append(p); print(f"✓ Saved: {p}")
+        except Exception as e:
+            print(f"! Scatter windspeed failed: {e}")
+
+        # Boxplot: cnt by workingday
+        try:
+            fig, ax = plt.subplots(figsize=(6, 5))
+            sns.boxplot(x='workingday', y='cnt', data=df, ax=ax)
+            ax.set_title('cnt by Workingday (0/1)')
+            fig.tight_layout()
+            p = os.path.join(output_dir, '10_box_cnt_by_workingday.png')
+            fig.savefig(p, dpi=200, bbox_inches='tight'); plt.close(fig)
+            saved.append(p); print(f"✓ Saved: {p}")
+        except Exception as e:
+            print(f"! Box workingday failed: {e}")
+
+        # Boxplot: cnt by holiday
+        try:
+            fig, ax = plt.subplots(figsize=(6, 5))
+            sns.boxplot(x='holiday', y='cnt', data=df, ax=ax)
+            ax.set_title('cnt by Holiday (0/1)')
+            fig.tight_layout()
+            p = os.path.join(output_dir, '11_box_cnt_by_holiday.png')
+            fig.savefig(p, dpi=200, bbox_inches='tight'); plt.close(fig)
+            saved.append(p); print(f"✓ Saved: {p}")
+        except Exception as e:
+            print(f"! Box holiday failed: {e}")
+
+        # Heatmap: hr × weekday average cnt
+        try:
+            pivot = df.pivot_table(index='hr', columns='weekday', values='cnt', aggfunc='mean')
+            fig, ax = plt.subplots(figsize=(9, 6))
+            sns.heatmap(pivot, cmap='YlGnBu', ax=ax)
+            ax.set_title('Average cnt by Hour × Weekday')
+            ax.set_xlabel('weekday (0–6)'); ax.set_ylabel('hr (0–23)')
+            fig.tight_layout()
+            p = os.path.join(output_dir, '12_heatmap_hr_weekday.png')
+            fig.savefig(p, dpi=200, bbox_inches='tight'); plt.close(fig)
+            saved.append(p); print(f"✓ Saved: {p}")
+        except Exception as e:
+            print(f"! Heatmap failed: {e}")
+
+        print(f"✓ Generated {len(saved)} charts.")
+        return True
+
     def create_all_datasets(self):
         print("\n=== Creating Sub-Datasets ===")
         self.create_correlation_dataset()
-        # self.create_descriptive_dataset()
+        self.create_descriptive_dataset()
         self.create_predictive_dataset()
+        self.create_descriptive_visualizations() # For visualizations in descriptive dataset
         print("=== Dataset creation complete ===\n")
-
 
 class CorrelationAnalyzer:
     def __init__(self, data):
@@ -539,8 +941,74 @@ class DescriptiveAnalyzer:
     
     def __init__(self, data):
         self.data = data
-    
+        self.basic_stats = None
+        self.tabulations = None
+        self.comparisons = None
+        self.distributions = None
+        self.outliers = None
 
+    def compute_basic_statistics(self):
+        numeric_cols = [c for c in ['cnt', 'casual', 'registered', 'temp', 'atemp', 'hum', 'windspeed'] if c in self.data.columns]
+        rows = []
+        for col in numeric_cols:
+            s = self.data[col].dropna()
+            mode_vals = s.mode(); mode_val = mode_vals.iloc[0] if not mode_vals.empty else np.nan
+            q1 = s.quantile(0.25); q3 = s.quantile(0.75)
+            rows.append({'Variable': col, 'Count': int(s.count()), 'Mean': float(s.mean()), 'Median': float(s.median()), 'Mode': float(mode_val) if pd.notnull(mode_val) else np.nan, 'Std': float(s.std()), 'Min': float(s.min()), 'Q1': float(q1), 'Q3': float(q3), 'Max': float(s.max()), 'Range': float(s.max() - s.min()), 'IQR': float(q3 - q1), 'Skew': float(s.skew()), 'Kurt': float(s.kurt())})
+        self.basic_stats = pd.DataFrame(rows)
+        return self.basic_stats
+
+    def analyze_categorical(self):
+        cat_vars = ['season', 'mnth', 'hr', 'weekday', 'holiday', 'workingday', 'weathersit', 'yr']
+        rows = []
+        n = len(self.data)
+        for var in cat_vars:
+            if var not in self.data.columns:
+                continue
+            counts = self.data[var].value_counts().sort_index()
+            for key, count in counts.items():
+                pct = (count / n) * 100 if n else 0
+                mean_cnt = self.data.loc[self.data[var] == key, 'cnt'].mean() if 'cnt' in self.data.columns else np.nan
+                rows.append({'Variable': var, 'Category': int(key) if pd.notnull(key) else key, 'Count': int(count), 'Percent': round(pct, 2), 'Avg_cnt': round(float(mean_cnt), 2) if pd.notnull(mean_cnt) else np.nan})
+        self.tabulations = pd.DataFrame(rows)
+        return self.tabulations
+
+    def analyze_distributions(self):
+        rows = []
+        for var in ['hr', 'weekday', 'mnth']:
+            if var not in self.data.columns:
+                continue
+            grp = self.data.groupby(var)['cnt'].agg(['count', 'mean', 'median', 'std'])
+            for k in grp.index:
+                rows.append({'Dimension': var, 'Category': int(k), 'Count': int(grp.loc[k, 'count']), 'Mean': round(float(grp.loc[k, 'mean']), 2), 'Median': round(float(grp.loc[k, 'median']), 2), 'Std': round(float(grp.loc[k, 'std']), 2)})
+        self.distributions = pd.DataFrame(rows)
+        return self.distributions
+
+    def detect_outliers(self):
+        if 'cnt' not in self.data.columns:
+            self.outliers = pd.DataFrame([{'Msg': 'cnt not found'}])
+            return self.outliers
+        q1 = self.data['cnt'].quantile(0.25); q3 = self.data['cnt'].quantile(0.75)
+        iqr = q3 - q1; lb = q1 - 1.5 * iqr; ub = q3 + 1.5 * iqr
+        mask = (self.data['cnt'] < lb) | (self.data['cnt'] > ub)
+        self.outliers = pd.DataFrame([{'Total_Records': int(len(self.data)), 'Outliers_Count': int(mask.sum()), 'Outliers_%': round(float(mask.mean() * 100), 2), 'Lower_Bound': float(lb), 'Upper_Bound': float(ub)}])
+        return self.outliers
+
+    def get_visualization_list(self):
+        return [
+            'Histogram: Distribution of hourly cnt',
+            'Bar: Average cnt by hr',
+            'Bar: Average cnt by weekday',
+            'Bar: Average cnt by month',
+            'Bar: Average cnt by season',
+            'Bar: Average cnt by weather situation',
+            'Scatter: temp vs cnt',
+            'Scatter: hum vs cnt',
+            'Scatter: windspeed vs cnt',
+            'Boxplot: cnt by workingday',
+            'Boxplot: cnt by holiday'
+        ]
+    
 class PredictiveAnalyzer:    
     def __init__(self, data):
         self.data = data
@@ -731,10 +1199,11 @@ if __name__ == "__main__":
     print("GROUP 1 - BIKE SHARING DATA")
     print("MIDTERM PROJECT")
     print("MEMBERS:")
-    print("  - Jan Lancelot P. Mailig")
+    print("  - Jan Lancelot Mailig")
     print("  - Jocas Arabella Cruz")
-    print("  - Eleazar Galope")
-    print("  - Jecho Parairo Torrefranca")
+    print("  - Eleazar James Galope")
+    print("  - Jecho Torrefranca")
+    print("  - John Neil Tamondong")
     print("="*60)
     
     curator = BikeDataCurator('hour.csv')
@@ -745,8 +1214,6 @@ if __name__ == "__main__":
         print("\n" + "="*60)
         print("ฅ^>⩊<^ ฅ RUNNING... ฅ^>⩊<^ ฅ")
         print("="*60)
-        
-        # Insert your print here guys for correlation and descriptive analyses
 
         # CORRELATION ANALYSIS ----------------------------------
         print("\n" + "="*60)
@@ -764,6 +1231,31 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"✗ Error in correlation analysis: {e}")
         
+        # DESCRIPTIVE ANALYSIS ----------------------------------
+        print("\n" + "="*60)
+        print("DESCRIPTIVE ANALYSIS")
+        print("="*60)
+        try:
+            desc_df = pd.read_csv('descriptive.csv')
+            if 'Section' in desc_df.columns:
+                for sec in ['PLAN','BASIC_STATS','TABULATION','COMPARISON','DISTRIBUTION','OUTLIERS']:
+                    sec_count = len(desc_df[desc_df['Section'] == sec])
+                    print(f"{sec:<13}: {sec_count} rows")
+            else:
+                print(f"descriptive.csv loaded: {len(desc_df)} rows")
+
+            try:
+                basic_head = desc_df[desc_df['Section']=='BASIC_STATS'].head(3)
+                if not basic_head.empty:
+                    print("\nTop BASIC_STATS preview (first 3 rows):")
+                    print(basic_head[['Variable','Mean','Median','Std']].to_string(index=False))
+            except Exception:
+                pass
+
+            print("\n✓ Descriptive analysis summary printed.")
+        except FileNotFoundError:
+            print("✗ descriptive.csv not found.")
+
         # PREDICTIVE ANALYSIS -----------------------------------
         print("\n" + "="*60)
         print("PREDICTIVE ANALYSIS")
@@ -796,8 +1288,9 @@ if __name__ == "__main__":
         print("\nGenerated files:")
         print("  Data files:")
         print("    - correlation.csv ✓")
-        # print("    - descriptive.csv ✓")
+        print("    - descriptive.csv ✓")
         print("    - predictive.csv ✓")
         print("\n  Visualization files:")
         print("    - prediction_comparison.png ✓")
+        print("    - descriptive_charts/ ✓")
         print("\n" + "="*60)
