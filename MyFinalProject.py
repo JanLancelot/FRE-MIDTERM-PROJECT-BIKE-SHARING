@@ -437,115 +437,6 @@ class BikeDataCurator:
         print(f"Max rentals per hour:     {self.predictive_data['cnt'].max()}")
         
         return True
-    
-        def create_descriptive_dataset(self, output_path='descriptive.csv'):
-            if self.main_data is None:
-                print("✗ Please load data first")
-                return False
-
-            print("\n=== Creating Descriptive Dataset ===")
-            df = self.main_data.copy()
-
-            variables = {
-                'dependent': ['cnt', 'casual', 'registered'],
-                'independent': {
-                    'temporal': ['hr', 'weekday', 'workingday', 'mnth', 'season', 'yr', 'holiday'],
-                    'environmental': ['weathersit', 'temp', 'atemp', 'hum', 'windspeed']
-                }
-            }
-
-            plan_rows = [
-                {'Section': 'PLAN', 'Item': 'Variables Selected - Dependent', 'Details': ', '.join(variables['dependent'])},
-                {'Section': 'PLAN', 'Item': 'Variables Selected - Independent (Temporal)', 'Details': ', '.join(variables['independent']['temporal'])},
-                {'Section': 'PLAN', 'Item': 'Variables Selected - Independent (Environmental)', 'Details': ', '.join(variables['independent']['environmental'])},
-                {'Section': 'PLAN', 'Item': 'Objective', 'Details': 'Understand hourly demand patterns, seasonal/weekday effects, weather impact, and user-type behavior.'},
-                {'Section': 'PLAN', 'Item': 'Theoretical Framework', 'Details': 'Demand Elasticity; Temporal Patterns; Weather–Demand; User Segmentation'},
-                {'Section': 'PLAN', 'Item': 'Type of Analysis', 'Details': 'count, mean, median, mode, std, quartiles, IQR; simple tabulation with percent; comparisons; distributions; outliers'}
-            ]
-            plan_df = pd.DataFrame(plan_rows)
-
-            numeric_cols = [c for c in ['cnt', 'casual', 'registered', 'temp', 'atemp', 'hum', 'windspeed'] if c in df.columns]
-            basic_rows = []
-            for col in numeric_cols:
-                s = df[col].dropna()
-                mode_vals = s.mode()
-                mode_val = mode_vals.iloc[0] if not mode_vals.empty else np.nan
-                q1 = s.quantile(0.25); q3 = s.quantile(0.75)
-                basic_rows.append({
-                    'Section': 'BASIC_STATS', 'Variable': col, 'Count': int(s.count()), 'Mean': float(s.mean()),
-                    'Median': float(s.median()), 'Mode': float(mode_val) if pd.notnull(mode_val) else np.nan,
-                    'Std': float(s.std()), 'Min': float(s.min()), 'Q1': float(q1), 'Q3': float(q3),
-                    'Max': float(s.max()), 'Range': float(s.max() - s.min()), 'IQR': float(q3 - q1),
-                    'Skew': float(s.skew()), 'Kurt': float(s.kurt())
-                })
-            basic_df = pd.DataFrame(basic_rows)
-
-            tab_rows = []
-            cat_vars = ['season', 'mnth', 'hr', 'weekday', 'holiday', 'workingday', 'weathersit', 'yr']
-            n = len(df)
-            for var in cat_vars:
-                if var not in df.columns:
-                    continue
-                counts = df[var].value_counts().sort_index()
-                for key, count in counts.items():
-                    pct = (count / n) * 100 if n else 0
-                    mean_cnt = df.loc[df[var] == key, 'cnt'].mean() if 'cnt' in df.columns else np.nan
-                    tab_rows.append({'Section': 'TABULATION', 'Variable': var, 'Category': int(key) if pd.notnull(key) else key,
-                                    'Count': int(count), 'Percent': round(pct, 2), 'Avg_cnt': round(float(mean_cnt), 2) if pd.notnull(mean_cnt) else np.nan})
-            tabs_df = pd.DataFrame(tab_rows)
-
-            comp_rows = []
-            if 'yr' in df.columns:
-                for y in sorted(df['yr'].unique()):
-                    sub = df[df['yr'] == y]['cnt']
-                    comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'Year', 'Group': int(y), 'Mean': float(sub.mean()), 'Median': float(sub.median()), 'Std': float(sub.std()), 'N': int(sub.count())})
-            if {'casual', 'registered', 'cnt'}.issubset(df.columns):
-                total = df['cnt'].sum()
-                casual_p = (df['casual'].sum() / total) * 100 if total else 0
-                reg_p = (df['registered'].sum() / total) * 100 if total else 0
-                comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'User Type Share', 'Group': 'Casual_%', 'Value': round(casual_p, 2)})
-                comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'User Type Share', 'Group': 'Registered_%', 'Value': round(reg_p, 2)})
-            if {'workingday', 'cnt'}.issubset(df.columns):
-                for k in sorted(df['workingday'].unique()):
-                    sub = df[df['workingday'] == k]['cnt']
-                    comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'Workingday', 'Group': int(k), 'Mean': float(sub.mean()), 'Median': float(sub.median()), 'Std': float(sub.std()), 'N': int(sub.count())})
-            if {'holiday', 'cnt'}.issubset(df.columns):
-                for k in sorted(df['holiday'].unique()):
-                    sub = df[df['holiday'] == k]['cnt']
-                    comp_rows.append({'Section': 'COMPARISON', 'Comparison': 'Holiday', 'Group': int(k), 'Mean': float(sub.mean()), 'Median': float(sub.median()), 'Std': float(sub.std()), 'N': int(sub.count())})
-            comp_df = pd.DataFrame(comp_rows)
-
-            dist_rows = []
-            for var in ['hr', 'weekday', 'mnth']:
-                if var not in df.columns:
-                    continue
-                grp = df.groupby(var)['cnt'].agg(['count', 'mean', 'median', 'std'])
-                for k in grp.index:
-                    dist_rows.append({'Section': 'DISTRIBUTION', 'Dimension': var, 'Category': int(k),
-                                    'Count': int(grp.loc[k, 'count']), 'Mean': round(float(grp.loc[k, 'mean']), 2),
-                                    'Median': round(float(grp.loc[k, 'median']), 2), 'Std': round(float(grp.loc[k, 'std']), 2)})
-            dist_df = pd.DataFrame(dist_rows)
-
-            if 'cnt' in df.columns:
-                q1 = df['cnt'].quantile(0.25); q3 = df['cnt'].quantile(0.75)
-                iqr = q3 - q1; lb = q1 - 1.5 * iqr; ub = q3 + 1.5 * iqr
-                mask = (df['cnt'] < lb) | (df['cnt'] > ub)
-                out_df = pd.DataFrame([{'Section': 'OUTLIERS', 'Total_Records': int(len(df)), 'Outliers_Count': int(mask.sum()), 'Outliers_%': round(float(mask.mean() * 100), 2), 'Lower_Bound': float(lb), 'Upper_Bound': float(ub), 'Min_cnt': int(df['cnt'].min()), 'Max_cnt': int(df['cnt'].max())}])
-            else:
-                out_df = pd.DataFrame([{'Section': 'OUTLIERS', 'Msg': 'cnt not found'}])
-
-            self.descriptive_data = pd.concat([plan_df, basic_df, tabs_df, comp_df, dist_df, out_df], ignore_index=True, sort=False)
-
-            try:
-                import os
-                os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
-            except Exception:
-                pass
-
-            self.descriptive_data.to_csv(output_path, index=False)
-            print(f"✓ Descriptive dataset created: {output_path}")
-
-            return True
 
     def create_descriptive_visualizations(self, output_dir='descriptive_charts'):
         if self.main_data is None:
@@ -559,7 +450,6 @@ class BikeDataCurator:
 
         saved = []
 
-        # Histogram: Distribution of hourly cnt
         try:
             fig, ax = plt.subplots(figsize=(8, 5))
             ax.hist(df['cnt'], bins=30, color='#69b3a2', edgecolor='black')
@@ -573,7 +463,6 @@ class BikeDataCurator:
         except Exception as e:
             print(f"! Histogram failed: {e}")
 
-        # Bar: Average cnt by hr
         try:
             fig, ax = plt.subplots(figsize=(9, 5))
             grp = df.groupby('hr')['cnt'].mean()
@@ -588,7 +477,6 @@ class BikeDataCurator:
         except Exception as e:
             print(f"! Bar hr failed: {e}")
 
-        # Bar: Average cnt by weekday
         try:
             fig, ax = plt.subplots(figsize=(9, 5))
             grp = df.groupby('weekday')['cnt'].mean()
@@ -604,7 +492,6 @@ class BikeDataCurator:
         except Exception as e:
             print(f"! Bar weekday failed: {e}")
 
-        # Bar: Average cnt by month
         try:
             fig, ax = plt.subplots(figsize=(9, 5))
             grp = df.groupby('mnth')['cnt'].mean()
@@ -619,7 +506,6 @@ class BikeDataCurator:
         except Exception as e:
             print(f"! Bar month failed: {e}")
 
-        # Bar: Average cnt by season
         try:
             fig, ax = plt.subplots(figsize=(7, 5))
             grp = df.groupby('season')['cnt'].mean()
@@ -636,7 +522,6 @@ class BikeDataCurator:
         except Exception as e:
             print(f"! Bar season failed: {e}")
 
-        # Bar: Average cnt by weathersit
         try:
             fig, ax = plt.subplots(figsize=(8, 5))
             grp = df.groupby('weathersit')['cnt'].mean()
@@ -653,7 +538,6 @@ class BikeDataCurator:
         except Exception as e:
             print(f"! Bar weather failed: {e}")
 
-        # Scatter: temp vs cnt
         try:
             fig, ax = plt.subplots(figsize=(6, 5))
             ax.scatter(df['temp'], df['cnt'], s=8, alpha=0.4, color='#4c72b0')
@@ -667,7 +551,6 @@ class BikeDataCurator:
         except Exception as e:
             print(f"! Scatter temp failed: {e}")
 
-        # Scatter: hum vs cnt
         try:
             fig, ax = plt.subplots(figsize=(6, 5))
             ax.scatter(df['hum'], df['cnt'], s=8, alpha=0.4, color='#55a868')
@@ -681,7 +564,6 @@ class BikeDataCurator:
         except Exception as e:
             print(f"! Scatter hum failed: {e}")
 
-        # Scatter: windspeed vs cnt
         try:
             fig, ax = plt.subplots(figsize=(6, 5))
             ax.scatter(df['windspeed'], df['cnt'], s=8, alpha=0.4, color='#c44e52')
@@ -695,7 +577,6 @@ class BikeDataCurator:
         except Exception as e:
             print(f"! Scatter windspeed failed: {e}")
 
-        # Boxplot: cnt by workingday
         try:
             fig, ax = plt.subplots(figsize=(6, 5))
             sns.boxplot(x='workingday', y='cnt', data=df, ax=ax)
@@ -707,7 +588,6 @@ class BikeDataCurator:
         except Exception as e:
             print(f"! Box workingday failed: {e}")
 
-        # Boxplot: cnt by holiday
         try:
             fig, ax = plt.subplots(figsize=(6, 5))
             sns.boxplot(x='holiday', y='cnt', data=df, ax=ax)
@@ -719,7 +599,6 @@ class BikeDataCurator:
         except Exception as e:
             print(f"! Box holiday failed: {e}")
 
-        # Heatmap: hr × weekday average cnt
         try:
             pivot = df.pivot_table(index='hr', columns='weekday', values='cnt', aggfunc='mean')
             fig, ax = plt.subplots(figsize=(9, 6))
@@ -741,7 +620,7 @@ class BikeDataCurator:
         self.create_correlation_dataset()
         self.create_descriptive_dataset()
         self.create_predictive_dataset()
-        self.create_descriptive_visualizations() # For visualizations in descriptive dataset
+        self.create_descriptive_visualizations()
         print("=== Dataset creation complete ===\n")
 
 class CorrelationAnalyzer:
@@ -871,11 +750,8 @@ class CorrelationAnalyzer:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         
         plt.figure(figsize=(12, 10))
-
-        # mask = np.triu(np.ones_like(self.correlation_matrix, dtype=bool))
         
         sns.heatmap(self.correlation_matrix, 
-                    # mask=mask,
                     annot=True, 
                     fmt='.2f', 
                     cmap='coolwarm', 
@@ -1049,7 +925,9 @@ class PredictiveAnalyzer:
             'train_r2': r2_score(self.y_train, y_pred_train),
             'test_r2': r2_score(self.y_test, y_pred_test),
             'mae': mean_absolute_error(self.y_test, y_pred_test),
-            'rmse': np.sqrt(mean_squared_error(self.y_test, y_pred_test))
+            'rmse': np.sqrt(mean_squared_error(self.y_test, y_pred_test)),
+            'train_predictions': y_pred_train,
+            'test_predictions': y_pred_test
         }
         
         print(f"Training R²: {self.results['lr']['train_r2']:.4f}")
@@ -1071,7 +949,9 @@ class PredictiveAnalyzer:
             'train_r2': r2_score(self.y_train, y_pred_train),
             'test_r2': r2_score(self.y_test, y_pred_test),
             'mae': mean_absolute_error(self.y_test, y_pred_test),
-            'rmse': np.sqrt(mean_squared_error(self.y_test, y_pred_test))
+            'rmse': np.sqrt(mean_squared_error(self.y_test, y_pred_test)),
+            'train_predictions': y_pred_train,
+            'test_predictions': y_pred_test
         }
         
         print(f"Training R²: {self.results['dt']['train_r2']:.4f}")
@@ -1102,6 +982,7 @@ class PredictiveAnalyzer:
         
         print("\n=== Model Comparison ===")
         comparison = pd.DataFrame(self.results).T
+        comparison = comparison[['train_r2', 'test_r2', 'mae', 'rmse']]
         print(comparison)
         
         best_model = 'Linear Regression' if self.results['lr']['test_r2'] > self.results['dt']['test_r2'] else 'Decision Tree'
@@ -1109,36 +990,375 @@ class PredictiveAnalyzer:
         
         return comparison
     
-    def visualize_predictions(self, save_path='prediction_comparison.png'):
+    def save_prediction_metrics(self, output_path='predictive_data/prediction_metrics.csv'):
+        """Save detailed prediction metrics to CSV"""
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        
+        if not self.results:
+            print("✗ Please train models first")
+            return
+        
+        metrics_data = []
+        
+        lr_residuals = self.y_test.values - self.results['lr']['test_predictions']
+        metrics_data.append({
+            'Model': 'Linear Regression',
+            'Train_R2': self.results['lr']['train_r2'],
+            'Test_R2': self.results['lr']['test_r2'],
+            'MAE': self.results['lr']['mae'],
+            'RMSE': self.results['lr']['rmse'],
+            'Mean_Residual': np.mean(lr_residuals),
+            'Std_Residual': np.std(lr_residuals),
+            'Min_Residual': np.min(lr_residuals),
+            'Max_Residual': np.max(lr_residuals)
+        })
+        
+        dt_residuals = self.y_test.values - self.results['dt']['test_predictions']
+        metrics_data.append({
+            'Model': 'Decision Tree',
+            'Train_R2': self.results['dt']['train_r2'],
+            'Test_R2': self.results['dt']['test_r2'],
+            'MAE': self.results['dt']['mae'],
+            'RMSE': self.results['dt']['rmse'],
+            'Mean_Residual': np.mean(dt_residuals),
+            'Std_Residual': np.std(dt_residuals),
+            'Min_Residual': np.min(dt_residuals),
+            'Max_Residual': np.max(dt_residuals)
+        })
+        
+        metrics_df = pd.DataFrame(metrics_data)
+        metrics_df.to_csv(output_path, index=False)
+        print(f"✓ Prediction metrics saved: {output_path}")
+        
+        return metrics_df
+    
+    def save_prediction_results(self, output_path='predictive_data/prediction_results.csv'):
+        """Save actual vs predicted values"""
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        
+        if not self.results:
+            print("✗ Please train models first")
+            return
+        
+        results_df = pd.DataFrame({
+            'Actual': self.y_test.values,
+            'LR_Predicted': self.results['lr']['test_predictions'],
+            'LR_Residual': self.y_test.values - self.results['lr']['test_predictions'],
+            'DT_Predicted': self.results['dt']['test_predictions'],
+            'DT_Residual': self.y_test.values - self.results['dt']['test_predictions']
+        })
+        
+        results_df.to_csv(output_path, index=False)
+        print(f"✓ Prediction results saved: {output_path}")
+        
+        return results_df
+    
+    def visualize_predictions(self, output_dir='predictive_charts'):
+        """Generate comprehensive predictive visualizations"""
         if self.lr_model is None or self.dt_model is None:
             print("✗ Please train both models first")
             return
         
-        lr_pred = self.lr_model.predict(self.X_test)
-        dt_pred = self.dt_model.predict(self.X_test)
+        os.makedirs(output_dir, exist_ok=True)
         
-        fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+        lr_pred = self.results['lr']['test_predictions']
+        dt_pred = self.results['dt']['test_predictions']
+        lr_residuals = self.y_test.values - lr_pred
+        dt_residuals = self.y_test.values - dt_pred
         
-        axes[0].scatter(self.y_test, lr_pred, alpha=0.5, s=10)
-        axes[0].plot([self.y_test.min(), self.y_test.max()], 
-                     [self.y_test.min(), self.y_test.max()], 'r--', lw=2)
-        axes[0].set_xlabel('Actual Rentals')
-        axes[0].set_ylabel('Predicted Rentals')
-        axes[0].set_title(f'Linear Regression (R² = {self.results["lr"]["test_r2"]:.3f})')
-        axes[0].grid(True, alpha=0.3)
+        print(f"\n=== Creating Predictive Visualizations ===")
+        saved_charts = []
         
-        axes[1].scatter(self.y_test, dt_pred, alpha=0.5, s=10, color='green')
-        axes[1].plot([self.y_test.min(), self.y_test.max()], 
-                     [self.y_test.min(), self.y_test.max()], 'r--', lw=2)
-        axes[1].set_xlabel('Actual Rentals')
-        axes[1].set_ylabel('Predicted Rentals')
-        axes[1].set_title(f'Decision Tree (R² = {self.results["dt"]["test_r2"]:.3f})')
-        axes[1].grid(True, alpha=0.3)
+        try:
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.scatter(self.y_test, lr_pred, alpha=0.5, s=15, color='#4c72b0')
+            ax.plot([self.y_test.min(), self.y_test.max()], 
+                   [self.y_test.min(), self.y_test.max()], 'r--', lw=2, label='Perfect Prediction')
+            ax.set_xlabel('Actual Rentals', fontsize=11)
+            ax.set_ylabel('Predicted Rentals', fontsize=11)
+            ax.set_title(f'Linear Regression: Actual vs Predicted\nR² = {self.results["lr"]["test_r2"]:.4f}', 
+                        fontweight='bold')
+            ax.legend()
+            ax.grid(True, alpha=0.3)
+            fig.tight_layout()
+            path = os.path.join(output_dir, '01_lr_actual_vs_predicted.png')
+            fig.savefig(path, dpi=300, bbox_inches='tight')
+            plt.close(fig)
+            saved_charts.append(path)
+            print(f"✓ Saved: {path}")
+        except Exception as e:
+            print(f"! Chart 1 failed: {e}")
         
-        plt.tight_layout()
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"✓ Prediction comparison chart saved: {save_path}")
-        plt.close()
+        try:
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.scatter(self.y_test, dt_pred, alpha=0.5, s=15, color='#55a868')
+            ax.plot([self.y_test.min(), self.y_test.max()], 
+                   [self.y_test.min(), self.y_test.max()], 'r--', lw=2, label='Perfect Prediction')
+            ax.set_xlabel('Actual Rentals', fontsize=11)
+            ax.set_ylabel('Predicted Rentals', fontsize=11)
+            ax.set_title(f'Decision Tree: Actual vs Predicted\nR² = {self.results["dt"]["test_r2"]:.4f}', 
+                        fontweight='bold')
+            ax.legend()
+            ax.grid(True, alpha=0.3)
+            fig.tight_layout()
+            path = os.path.join(output_dir, '02_dt_actual_vs_predicted.png')
+            fig.savefig(path, dpi=300, bbox_inches='tight')
+            plt.close(fig)
+            saved_charts.append(path)
+            print(f"✓ Saved: {path}")
+        except Exception as e:
+            print(f"! Chart 2 failed: {e}")
+        
+        try:
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.scatter(lr_pred, lr_residuals, alpha=0.5, s=15, color='#4c72b0')
+            ax.axhline(y=0, color='r', linestyle='--', lw=2)
+            ax.set_xlabel('Predicted Rentals', fontsize=11)
+            ax.set_ylabel('Residuals', fontsize=11)
+            ax.set_title('Linear Regression: Residual Plot', fontweight='bold')
+            ax.grid(True, alpha=0.3)
+            fig.tight_layout()
+            path = os.path.join(output_dir, '03_lr_residual_plot.png')
+            fig.savefig(path, dpi=300, bbox_inches='tight')
+            plt.close(fig)
+            saved_charts.append(path)
+            print(f"✓ Saved: {path}")
+        except Exception as e:
+            print(f"! Chart 3 failed: {e}")
+        
+        try:
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.scatter(dt_pred, dt_residuals, alpha=0.5, s=15, color='#55a868')
+            ax.axhline(y=0, color='r', linestyle='--', lw=2)
+            ax.set_xlabel('Predicted Rentals', fontsize=11)
+            ax.set_ylabel('Residuals', fontsize=11)
+            ax.set_title('Decision Tree: Residual Plot', fontweight='bold')
+            ax.grid(True, alpha=0.3)
+            fig.tight_layout()
+            path = os.path.join(output_dir, '04_dt_residual_plot.png')
+            fig.savefig(path, dpi=300, bbox_inches='tight')
+            plt.close(fig)
+            saved_charts.append(path)
+            print(f"✓ Saved: {path}")
+        except Exception as e:
+            print(f"! Chart 4 failed: {e}")
+        
+        try:
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.hist(lr_residuals, bins=50, color='#4c72b0', edgecolor='black', alpha=0.7)
+            ax.axvline(x=0, color='r', linestyle='--', lw=2)
+            ax.set_xlabel('Residuals', fontsize=11)
+            ax.set_ylabel('Frequency', fontsize=11)
+            ax.set_title(f'Linear Regression: Residual Distribution\nMean = {np.mean(lr_residuals):.2f}, Std = {np.std(lr_residuals):.2f}', 
+                        fontweight='bold')
+            ax.grid(True, alpha=0.3)
+            fig.tight_layout()
+            path = os.path.join(output_dir, '05_lr_residual_distribution.png')
+            fig.savefig(path, dpi=300, bbox_inches='tight')
+            plt.close(fig)
+            saved_charts.append(path)
+            print(f"✓ Saved: {path}")
+        except Exception as e:
+            print(f"! Chart 5 failed: {e}")
+        
+        try:
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.hist(dt_residuals, bins=50, color='#55a868', edgecolor='black', alpha=0.7)
+            ax.axvline(x=0, color='r', linestyle='--', lw=2)
+            ax.set_xlabel('Residuals', fontsize=11)
+            ax.set_ylabel('Frequency', fontsize=11)
+            ax.set_title(f'Decision Tree: Residual Distribution\nMean = {np.mean(dt_residuals):.2f}, Std = {np.std(dt_residuals):.2f}', 
+                        fontweight='bold')
+            ax.grid(True, alpha=0.3)
+            fig.tight_layout()
+            path = os.path.join(output_dir, '06_dt_residual_distribution.png')
+            fig.savefig(path, dpi=300, bbox_inches='tight')
+            plt.close(fig)
+            saved_charts.append(path)
+            print(f"✓ Saved: {path}")
+        except Exception as e:
+            print(f"! Chart 6 failed: {e}")
+        
+        try:
+            feature_importance = pd.DataFrame({
+                'feature': self.X_train.columns,
+                'importance': self.dt_model.feature_importances_
+            }).sort_values('importance', ascending=True)
+            
+            fig, ax = plt.subplots(figsize=(8, 7))
+            ax.barh(feature_importance['feature'], feature_importance['importance'], 
+                   color='#55a868', edgecolor='black')
+            ax.set_xlabel('Importance', fontsize=11)
+            ax.set_ylabel('Features', fontsize=11)
+            ax.set_title('Decision Tree: Feature Importance', fontweight='bold')
+            ax.grid(True, alpha=0.3, axis='x')
+            fig.tight_layout()
+            path = os.path.join(output_dir, '07_feature_importance.png')
+            fig.savefig(path, dpi=300, bbox_inches='tight')
+            plt.close(fig)
+            saved_charts.append(path)
+            print(f"✓ Saved: {path}")
+        except Exception as e:
+            print(f"! Chart 7 failed: {e}")
+        
+        try:
+            metrics = ['Train R²', 'Test R²', 'MAE', 'RMSE']
+            lr_values = [self.results['lr']['train_r2'], self.results['lr']['test_r2'], 
+                        self.results['lr']['mae'], self.results['lr']['rmse']]
+            dt_values = [self.results['dt']['train_r2'], self.results['dt']['test_r2'], 
+                        self.results['dt']['mae'], self.results['dt']['rmse']]
+            
+            x = np.arange(len(metrics))
+            width = 0.35
+            
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.bar(x - width/2, lr_values, width, label='Linear Regression', color='#4c72b0', edgecolor='black')
+            ax.bar(x + width/2, dt_values, width, label='Decision Tree', color='#55a868', edgecolor='black')
+            
+            ax.set_ylabel('Score', fontsize=11)
+            ax.set_title('Model Performance Comparison', fontweight='bold', fontsize=13)
+            ax.set_xticks(x)
+            ax.set_xticklabels(metrics)
+            ax.legend()
+            ax.grid(True, alpha=0.3, axis='y')
+            fig.tight_layout()
+            path = os.path.join(output_dir, '08_model_comparison.png')
+            fig.savefig(path, dpi=300, bbox_inches='tight')
+            plt.close(fig)
+            saved_charts.append(path)
+            print(f"✓ Saved: {path}")
+        except Exception as e:
+            print(f"! Chart 8 failed: {e}")
+        
+        try:
+            test_data = self.X_test.copy()
+            test_data['actual'] = self.y_test.values
+            test_data['lr_pred'] = lr_pred
+            test_data['dt_pred'] = dt_pred
+            test_data['lr_error'] = np.abs(lr_residuals)
+            test_data['dt_error'] = np.abs(dt_residuals)
+            
+            hourly_error = test_data.groupby('hr').agg({
+                'lr_error': 'mean',
+                'dt_error': 'mean'
+            })
+            
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.plot(hourly_error.index, hourly_error['lr_error'], 
+                   marker='o', label='Linear Regression', color='#4c72b0', linewidth=2)
+            ax.plot(hourly_error.index, hourly_error['dt_error'], 
+                   marker='s', label='Decision Tree', color='#55a868', linewidth=2)
+            ax.set_xlabel('Hour of Day', fontsize=11)
+            ax.set_ylabel('Mean Absolute Error', fontsize=11)
+            ax.set_title('Prediction Error by Hour of Day', fontweight='bold')
+            ax.legend()
+            ax.grid(True, alpha=0.3)
+            fig.tight_layout()
+            path = os.path.join(output_dir, '09_error_by_hour.png')
+            fig.savefig(path, dpi=300, bbox_inches='tight')
+            plt.close(fig)
+            saved_charts.append(path)
+            print(f"✓ Saved: {path}")
+        except Exception as e:
+            print(f"! Chart 9 failed: {e}")
+        
+        try:
+            seasonal_error = test_data.groupby('season').agg({
+                'lr_error': 'mean',
+                'dt_error': 'mean'
+            })
+            
+            season_labels = {1: 'Spring', 2: 'Summer', 3: 'Fall', 4: 'Winter'}
+            x_labels = [season_labels.get(i, str(i)) for i in seasonal_error.index]
+            
+            x = np.arange(len(seasonal_error))
+            width = 0.35
+            
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.bar(x - width/2, seasonal_error['lr_error'], width, 
+                  label='Linear Regression', color='#4c72b0', edgecolor='black')
+            ax.bar(x + width/2, seasonal_error['dt_error'], width, 
+                  label='Decision Tree', color='#55a868', edgecolor='black')
+            
+            ax.set_ylabel('Mean Absolute Error', fontsize=11)
+            ax.set_title('Prediction Error by Season', fontweight='bold')
+            ax.set_xticks(x)
+            ax.set_xticklabels(x_labels)
+            ax.legend()
+            ax.grid(True, alpha=0.3, axis='y')
+            fig.tight_layout()
+            path = os.path.join(output_dir, '10_error_by_season.png')
+            fig.savefig(path, dpi=300, bbox_inches='tight')
+            plt.close(fig)
+            saved_charts.append(path)
+            print(f"✓ Saved: {path}")
+        except Exception as e:
+            print(f"! Chart 10 failed: {e}")
+        
+        try:
+            weather_error = test_data.groupby('weathersit').agg({
+                'lr_error': 'mean',
+                'dt_error': 'mean'
+            })
+            
+            weather_labels = {1: 'Clear', 2: 'Mist/Cloudy', 3: 'Light Rain', 4: 'Heavy Rain'}
+            x_labels = [weather_labels.get(i, str(i)) for i in weather_error.index]
+            
+            x = np.arange(len(weather_error))
+            width = 0.35
+            
+            fig, ax = plt.subplots(figsize=(9, 6))
+            ax.bar(x - width/2, weather_error['lr_error'], width, 
+                  label='Linear Regression', color='#4c72b0', edgecolor='black')
+            ax.bar(x + width/2, weather_error['dt_error'], width, 
+                  label='Decision Tree', color='#55a868', edgecolor='black')
+            
+            ax.set_ylabel('Mean Absolute Error', fontsize=11)
+            ax.set_title('Prediction Error by Weather Situation', fontweight='bold')
+            ax.set_xticks(x)
+            ax.set_xticklabels(x_labels, rotation=15)
+            ax.legend()
+            ax.grid(True, alpha=0.3, axis='y')
+            fig.tight_layout()
+            path = os.path.join(output_dir, '11_error_by_weather.png')
+            fig.savefig(path, dpi=300, bbox_inches='tight')
+            plt.close(fig)
+            saved_charts.append(path)
+            print(f"✓ Saved: {path}")
+        except Exception as e:
+            print(f"! Chart 11 failed: {e}")
+        
+        try:
+            fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+            
+            axes[0].scatter(self.y_test, lr_pred, alpha=0.5, s=15, color='#4c72b0')
+            axes[0].plot([self.y_test.min(), self.y_test.max()], 
+                        [self.y_test.min(), self.y_test.max()], 'r--', lw=2)
+            axes[0].set_xlabel('Actual Rentals')
+            axes[0].set_ylabel('Predicted Rentals')
+            axes[0].set_title(f'Linear Regression\nR² = {self.results["lr"]["test_r2"]:.4f}, MAE = {self.results["lr"]["mae"]:.2f}')
+            axes[0].grid(True, alpha=0.3)
+            
+            axes[1].scatter(self.y_test, dt_pred, alpha=0.5, s=15, color='#55a868')
+            axes[1].plot([self.y_test.min(), self.y_test.max()], 
+                        [self.y_test.min(), self.y_test.max()], 'r--', lw=2)
+            axes[1].set_xlabel('Actual Rentals')
+            axes[1].set_ylabel('Predicted Rentals')
+            axes[1].set_title(f'Decision Tree\nR² = {self.results["dt"]["test_r2"]:.4f}, MAE = {self.results["dt"]["mae"]:.2f}')
+            axes[1].grid(True, alpha=0.3)
+            
+            fig.suptitle('Model Comparison: Actual vs Predicted', fontweight='bold', fontsize=14)
+            fig.tight_layout()
+            path = os.path.join(output_dir, '12_combined_comparison.png')
+            fig.savefig(path, dpi=300, bbox_inches='tight')
+            plt.close(fig)
+            saved_charts.append(path)
+            print(f"✓ Saved: {path}")
+        except Exception as e:
+            print(f"! Chart 12 failed: {e}")
+        
+        print(f"\n✓ Generated {len(saved_charts)} predictive charts in '{output_dir}/' folder")
+        return saved_charts
 
 
 if __name__ == "__main__":
@@ -1199,6 +1419,7 @@ if __name__ == "__main__":
     ..........................................::::::::::..............::::::::::::::-#@%*+===+*#@@%=........
     ...................................................:::....................:........:-+#@@@#+:...........
     ...........................................................................................::.....:::::-""")
+        
     print("="*60)
     print("GROUP 1 - BIKE SHARING DATA")
     print("MIDTERM PROJECT")
@@ -1219,7 +1440,6 @@ if __name__ == "__main__":
         print("ฅ^>⩊<^ ฅ RUNNING... ฅ^>⩊<^ ฅ")
         print("="*60)
 
-        # CORRELATION ANALYSIS ----------------------------------
         print("\n" + "="*60)
         print("CORRELATION ANALYSIS")
         print("="*60)
@@ -1235,7 +1455,6 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"✗ Error in correlation analysis: {e}")
         
-        # DESCRIPTIVE ANALYSIS ----------------------------------
         print("\n" + "="*60)
         print("DESCRIPTIVE ANALYSIS")
         print("="*60)
@@ -1260,7 +1479,6 @@ if __name__ == "__main__":
         except FileNotFoundError:
             print("✗ descriptive.csv not found.")
 
-        # PREDICTIVE ANALYSIS -----------------------------------
         print("\n" + "="*60)
         print("PREDICTIVE ANALYSIS")
         print("="*60)
@@ -1278,6 +1496,9 @@ if __name__ == "__main__":
             
             predictor.compare_models()
             
+            predictor.save_prediction_metrics()
+            predictor.save_prediction_results()
+            
             predictor.visualize_predictions()
             
             print("\n✓ Predictive analysis complete!")
@@ -1294,7 +1515,10 @@ if __name__ == "__main__":
         print("    - correlation.csv ✓")
         print("    - descriptive.csv ✓")
         print("    - predictive.csv ✓")
-        print("\n  Visualization files:")
-        print("    - prediction_comparison.png ✓")
-        print("    - descriptive_charts/ ✓")
+        print("    - predictive_data/prediction_metrics.csv ✓")
+        print("    - predictive_data/prediction_results.csv ✓")
+        print("\n  Visualization folders:")
+        print("    - correlation_graphs/ (2 charts) ✓")
+        print("    - descriptive_charts/ (12 charts) ✓")
+        print("    - predictive_charts/ (12 charts) ✓")
         print("\n" + "="*60)
