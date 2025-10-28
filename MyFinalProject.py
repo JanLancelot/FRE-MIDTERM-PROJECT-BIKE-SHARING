@@ -823,7 +823,6 @@ class DescriptiveAnalyzer:
         self.data = data
         self.basic_stats = None
         self.tabulations = None
-        self.comparisons = None
         self.distributions = None
         self.outliers = None
 
