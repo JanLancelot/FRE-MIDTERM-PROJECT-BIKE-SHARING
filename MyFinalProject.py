@@ -762,7 +762,7 @@ class CorrelationAnalyzer:
         print("Type: Linear Pearson correlation (continuous variables)")
         print()
         
-        env_vars = ['temp', 'atemp', 'hum', 'windspeed']
+        env_vars = ['temp', 'atemp', 'hum', 'windspeed', 'weathersit']
         target = 'cnt'
         
         results = []
@@ -872,10 +872,10 @@ class CorrelationAnalyzer:
         
         plt.figure(figsize=(12, 10))
 
-        # mask = np.triu(np.ones_like(self.correlation_matrix, dtype=bool))
+        mask = np.triu(np.ones_like(self.correlation_matrix, dtype=bool))
         
         sns.heatmap(self.correlation_matrix, 
-                    # mask=mask,
+                    mask=mask,
                     annot=True, 
                     fmt='.2f', 
                     cmap='coolwarm', 
