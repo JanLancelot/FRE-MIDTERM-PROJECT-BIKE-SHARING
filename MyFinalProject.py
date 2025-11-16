@@ -871,6 +871,36 @@ class CorrelationAnalyzer:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
             print(f"✓ Rental correlations chart saved: {save_path}")
             plt.close()
+
+    def visualize_individual_correlations(self, output_dir='./correlation_graphs/individual'):
+        os.makedirs(output_dir, exist_ok=True)
+        
+        print("\n=== Generating Individual Correlation Charts ===")
+        
+        variables = self.correlation_matrix.columns.tolist()
+        
+        for var in variables:
+            var_corr = self.correlation_matrix[var].drop(var).sort_values()
+            
+            plt.figure(figsize=(10, 8))
+            colors = ['red' if x < 0 else 'green' for x in var_corr.values]
+            var_corr.plot(kind='barh', color=colors, edgecolor='black', linewidth=0.5)
+            
+            plt.axvline(x=0, color='black', linestyle='-', linewidth=0.8)
+            plt.xlabel('Correlation Coefficient', fontsize=12)
+            plt.ylabel('Variables', fontsize=12)
+            plt.title(f'Correlations with {var}', 
+                      fontsize=14, fontweight='bold')
+            plt.grid(axis='x', alpha=0.3)
+            plt.tight_layout()
+            
+            save_path = os.path.join(output_dir, f'{var}_correlations.png')
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            plt.close()
+            
+            print(f"✓ Saved: {save_path}")
+        
+        print(f"\n✓ Generated {len(variables)} individual correlation charts")
     
     def generate_correlation_report(self):
         print("\n" + "="*60)
@@ -1551,6 +1581,7 @@ if __name__ == "__main__":
             correlator.generate_correlation_report()
             correlator.visualize_correlation_heatmap()
             correlator.visualize_rental_correlations()
+            correlator.visualize_individual_correlations()
             
             print("\n✓ Correlation analysis complete!")
         except FileNotFoundError:
