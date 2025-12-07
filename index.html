@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bike Sharing Demand Analysis | Group 1</title>
+    <link rel="stylesheet" href="styles.css" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: #f8fafc;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      .glass-nav {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      }
+
+      .chart-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      }
+
+      .chart-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        border-color: #cbd5e1;
+      }
+
+      .gradient-text {
+        background: linear-gradient(135deg, #0f766e 0%, #0ea5e9 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .code-keyword {
+        color: #c678dd;
+      }
+      .code-func {
+        color: #61afef;
+      }
+      .code-string {
+        color: #98c379;
+      }
+      .code-comment {
+        color: #5c6370;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body class="text-slate-800">
+    <nav class="fixed w-full z-50 glass-nav">
+      <div
+        class="container mx-auto px-6 py-4 flex justify-between items-center"
+      >
+        <div class="flex items-center gap-2">
+          <i class="fas fa-bicycle text-2xl text-teal-600"></i>
+          <span class="text-xl font-bold tracking-tight"
+            >Group 1 <span class="text-teal-600">Bike-Sharing Analysis</span></span
+          >
+        </div>
+        <div
+          class="hidden md:flex space-x-8 text-sm font-semibold text-slate-600"
+        >
+          <a href="#home" class="hover:text-teal-600 transition">Overview</a>
+          <a href="#descriptive" class="hover:text-teal-600 transition"
+            >Descriptive</a
+          >
+          <a href="#correlation" class="hover:text-teal-600 transition"
+            >Correlation</a
+          >
+          <a href="#predictive" class="hover:text-teal-600 transition"
+            >Predictive</a
+          >
+          <a href="#code" class="hover:text-teal-600 transition">Code</a>
+        </div>
+      </div>
+    </nav>
+
+    <header id="home" class="pt-32 pb-20 px-6 bg-white">
+      <div class="container mx-auto text-center">
+        <div
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-50 text-teal-700 text-xs font-bold uppercase tracking-wider mb-6"
+        >
+          <span class="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
+          Final FRE Project
+        </div>
+        <h1
+          class="text-5xl md:text-7xl font-bold mb-6 text-slate-900 tracking-tight"
+        >
+          Bike Sharing <br class="hidden md:block" />
+          <span class="gradient-text">Demand Prediction</span>
+        </h1>
+        <p
+          class="text-xl text-slate-500 mb-10 max-w-2xl mx-auto leading-relaxed"
+        >
+          A comprehensive analysis using Python & Scikit-Learn to uncover
+          temporal patterns and predict hourly rental demand.
+        </p>
+
+        <div class="flex flex-wrap justify-center gap-3">
+          <span
+            class="px-4 py-2 bg-slate-100 rounded-lg text-sm font-medium text-slate-600"
+            >Jan Lancelot Mailig</span
+          >
+          <span
+            class="px-4 py-2 bg-slate-100 rounded-lg text-sm font-medium text-slate-600"
+            >Jocas Arabella Cruz</span
+          >
+          <span
+            class="px-4 py-2 bg-slate-100 rounded-lg text-sm font-medium text-slate-600"
+            >Eleazar James Galope</span
+          >
+          <span
+            class="px-4 py-2 bg-slate-100 rounded-lg text-sm font-medium text-slate-600"
+            >Jecho Torrefranca</span
+          >
+          <span
+            class="px-4 py-2 bg-slate-100 rounded-lg text-sm font-medium text-slate-600"
+            >John Neil Tamondong</span
+          >
+        </div>
+      </div>
+    </header>
+
+    <section class="bg-slate-900 text-white py-12">
+      <div class="container mx-auto px-6">
+        <div
+          class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-700/50"
+        >
+          <div>
+            <div class="text-4xl font-bold text-teal-400 mb-1">17,379</div>
+            <div class="text-xs uppercase tracking-widest text-slate-400">
+              Total Records
+            </div>
+          </div>
+          <div>
+            <div class="text-4xl font-bold text-teal-400 mb-1">536</div>
+            <div class="text-xs uppercase tracking-widest text-slate-400">
+              Outliers Removed
+            </div>
+          </div>
+          <div>
+            <div class="text-4xl font-bold text-teal-400 mb-1">189.5</div>
+            <div class="text-xs uppercase tracking-widest text-slate-400">
+              Avg Rentals/Hr
+            </div>
+          </div>
+          <div>
+            <div class="text-4xl font-bold text-teal-400 mb-1">80.8%</div>
+            <div class="text-xs uppercase tracking-widest text-slate-400">
+              Model Accuracy (R²)
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="descriptive" class="py-20 bg-slate-50">
+      <div class="container mx-auto px-6">
+        <div class="max-w-3xl mb-12">
+          <h2 class="text-3xl font-bold text-slate-900 mb-4">
+            1. Descriptive Analysis
+          </h2>
+          <p class="text-slate-600 text-lg">
+            We visualized the distribution of rentals across temporal (Hour,
+            Month, Season) and environmental (Weather, Temperature) factors.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="chart-card">
+            <div
+              class="p-4 border-b border-slate-100 bg-white font-semibold text-slate-700"
+            >
+              01. Hourly Distribution
+            </div>
+            <img
+              src="descriptive_charts/01_hist_total_rentals.png"
+              alt="Graph 1"
+              class="w-full h-auto object-contain"
+              loading="lazy"
+            />
+          </div>
+          <div class="chart-card">
+            <div
+              class="p-4 border-b border-slate-100 bg-white font-semibold text-slate-700"
+            >
+              02. Avg by Hour
+            </div>
+            <img
+              src="descriptive_charts/02_bar_avg_by_hour.png"
+              alt="Graph 2"
+              class="w-full h-auto object-contain"
+              loading="lazy"
+            />
+          </div>
+          <div class="chart-card">
+            <div
+              class="p-4 border-b border-slate-100 bg-white font-semibold text-slate-700"
+            >
+              03. Avg by Weekday
+            </div>
+            <img
+              src="descriptive_charts/03_bar_avg_by_weekday.png"
+              alt="Graph 3"
+              class="w-full h-auto object-contain"
+              loading="lazy"
+            />
+          </div>
+          <div class="chart-card">
+            <div
+              class="p-4 border-b border-slate-100 bg-white font-semibold text-slate-700"
+            >
+              04. Avg by Month
+            </div>
+            <img
+              src="descriptive_charts/04_bar_avg_by_month.png"
+              alt="Graph 4"
+              class="w-full h-auto object-contain"
+              loading="lazy"
+            />
+          </div>
+          <div class="chart-card">
+            <div
+              class="p-4 border-b border-slate-100 bg-white font-semibold text-slate-700"
+            >
+              05. Avg by Season
+            </div>
+            <img
+              src="descriptive_charts/05_bar_avg_by_season.png"
+              alt="Graph 5"
+              class="w-full h-auto object-contain"
+              loading="lazy"
+            />
+          </div>
+          <div class="chart-card">
+            <div
+              class="p-4 border-b border-slate-100 bg-white font-semibold text-slate-700"
+            >
+              06. Avg by Weather
+            </div>
+            <img
+              src="descriptive_charts/06_bar_avg_by_weather.png"
+              alt="Graph 6"
+              class="w-full h-auto object-contain"
+              loading="lazy"
+            />
+          </div>
+          <div class="chart-card">
+            <div
+              class="p-4 border-b border-slate-100 bg-white font-semibold text-slate-700"
+            >
+              07. Temp vs Rentals
+            </div>
+            <img
+              src="descriptive_charts/07_scatter_temp_rentals.png"
+              alt="Graph 7"
+              class="w-full h-auto object-contain"
+              loading="lazy"
+            />
+          </div>
+          <div class="chart-card">
+            <div
+              class="p-4 border-b border-slate-100 bg-white font-semibold text-slate-700"
+            >
+              08. Humidity vs Rentals
+            </div>
+            <img
+              src="descriptive_charts/08_scatter_humidity_rentals.png"
+              alt="Graph 8"
+              class="w-full h-auto object-contain"
+              loading="lazy"
+            />
+          </div>
+          <div class="chart-card">
+            <div
+              class="p-4 border-b border-slate-100 bg-white font-semibold text-slate-700"
+            >
+              09. Windspeed vs Rentals
+            </div>
+            <img
+              src="descriptive_charts/09_scatter_windspeed_rentals.png"
+              alt="Graph 9"
+              class="w-full h-auto object-contain"
+              loading="lazy"
+            />
+          </div>
+          <div class="chart-card">
+            <div
+              class="p-4 border-b border-slate-100 bg-white font-semibold text-slate-700"
+            >
+              10. Workingday Boxplot
+            </div>
+            <img
+              src="descriptive_charts/10_box_rentals_by_workingday.png"
+              alt="Graph 10"
+              class="w-full h-auto object-contain"
+              loading="lazy"
+            />
+          </div>
+          <div class="chart-card">
+            <div
+              class="p-4 border-b border-slate-100 bg-white font-semibold text-slate-700"
+            >
+              11. Holiday Boxplot
+            </div>
+            <img
+              src="descriptive_charts/11_box_rentals_by_holiday.png"
+              alt="Graph 11"
+              class="w-full h-auto object-contain"
+              loading="lazy"
+            />
+          </div>
+          <div class="chart-card">
+            <div
+              class="p-4 border-b border-slate-100 bg-white font-semibold text-slate-700"
+            >
+              12. Hour x Weekday Heatmap
+            </div>
+            <img
+              src="descriptive_charts/12_heatmap_hour_weekday.png"
+              alt="Graph 12"
+              class="w-full h-auto object-contain"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="correlation" class="py-20 bg-white border-y border-slate-200">
+      <div class="container mx-auto px-6">
+        <div class="max-w-3xl mb-12">
+          <h2 class="text-3xl font-bold text-slate-900 mb-4">
+            2. Correlation Analysis
+          </h2>
+          <p class="text-slate-600 text-lg">
+            Identifying strong drivers of demand.
+            <span class="font-bold text-teal-600">Registered Users (0.97)</span>
+            and
+            <span class="font-bold text-teal-600">Temperature (0.40)</span>
+            showed the strongest positive correlations.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+          <div class="chart-card shadow-lg">
+            <div
+              class="p-5 bg-teal-50 border-b border-teal-100 font-bold text-teal-800 text-center"
+            >
+              Correlation Heatmap
+            </div>
+            <img
+              src="correlation_graphs/correlation_heatmap.png"
+              class="w-full h-auto"
+              alt="Heatmap"
+            />
+          </div>
+          <div class="chart-card shadow-lg">
+            <div
+              class="p-5 bg-teal-50 border-b border-teal-100 font-bold text-teal-800 text-center"
+            >
+              Correlation with Total Rentals
+            </div>
+            <img
+              src="correlation_graphs/rental_correlations.png"
+              class="w-full h-auto"
+              alt="Rental Corr"
+            />
+          </div>
+        </div>
+
+        <h3
+          class="text-xl font-bold mb-6 text-slate-800 border-l-4 border-teal-500 pl-4"
+        >
+          Individual Variable Correlations
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="chart-card">
+            <img
+              src="correlation_graphs/individual/temp_correlations.png"
+              class="w-full"
+              alt="Corr"
+            />
+          </div>
+          <div class="chart-card">
+            <img
+              src="correlation_graphs/individual/feeling_temperature_correlations.png"
+              class="w-full"
+              alt="Corr"
+            />
+          </div>
+          <div class="chart-card">
+            <img
+              src="correlation_graphs/individual/humidity_correlations.png"
+              class="w-full"
+              alt="Corr"
+            />
+          </div>
+          <div class="chart-card">
+            <img
+              src="correlation_graphs/individual/windspeed_correlations.png"
+              class="w-full"
+              alt="Corr"
+            />
+          </div>
+          <div class="chart-card">
+            <img
+              src="correlation_graphs/individual/hour_correlations.png"
+              class="w-full"
+              alt="Corr"
+            />
+          </div>
+          <div class="chart-card">
+            <img
+              src="correlation_graphs/individual/season_correlations.png"
+              class="w-full"
+              alt="Corr"
+            />
+          </div>
+          <div class="chart-card">
+            <img
+              src="correlation_graphs/individual/month_correlations.png"
+              class="w-full"
+              alt="Corr"
+            />
+          </div>
+          <div class="chart-card">
+            <img
+              src="correlation_graphs/individual/weekday_correlations.png"
+              class="w-full"
+              alt="Corr"
+            />
+          </div>
+          <div class="chart-card">
+            <img
+              src="correlation_graphs/individual/weather_situation_correlations.png"
+              class="w-full"
+              alt="Corr"
+            />
+          </div>
+          <div class="chart-card">
+            <img
+              src="correlation_graphs/individual/workingday_correlations.png"
+              class="w-full"
+              alt="Corr"
+            />
+          </div>
+          <div class="chart-card">
+            <img
+              src="correlation_graphs/individual/holiday_correlations.png"
+              class="w-full"
+              alt="Corr"
+            />
+          </div>
+          <div class="chart-card">
+            <img
+              src="correlation_graphs/individual/registered_users_correlations.png"
+              class="w-full"
+              alt="Corr"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="predictive" class="py-20 bg-slate-50">
+      <div class="container mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl font-bold text-slate-900 mb-4">
+            3. Predictive Modeling Results
+          </h2>
+          <p class="text-slate-600 text-lg max-w-2xl mx-auto">
+            We compared Linear Regression against a Decision Tree Regressor. The
+            Decision Tree significantly outperformed the baseline.
+          </p>
+        </div>
+
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-4xl mx-auto"
+        >
+          <div
+            class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200"
+          >
+            <h3 class="text-xl font-bold text-slate-700 mb-6">
+              Linear Regression
+            </h3>
+            <div class="flex justify-between items-end mb-2">
+              <span class="text-slate-500 text-sm">R² Score</span>
+              <span class="text-3xl font-bold text-slate-600">34.55%</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2 mb-6">
+              <div
+                class="bg-slate-400 h-2 rounded-full"
+                style="width: 34.5%"
+              ></div>
+            </div>
+            <div
+              class="flex justify-between text-sm text-slate-500 border-t pt-4"
+            >
+              <span>MAE: 106.75</span>
+              <span>RMSE: 143.96</span>
+            </div>
+          </div>
+
+          <div
+            class="bg-white p-8 rounded-2xl shadow-lg border-2 border-teal-500 relative transform md:-translate-y-4"
+          >
+            <div
+              class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-teal-500 text-white px-4 py-1 text-xs font-bold uppercase rounded-full tracking-wide"
+            >
+              Best Model
+            </div>
+            <h3 class="text-xl font-bold text-teal-700 mb-6">Decision Tree</h3>
+            <div class="flex justify-between items-end mb-2">
+              <span class="text-slate-500 text-sm">R² Score</span>
+              <span class="text-3xl font-bold text-teal-600">80.78%</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2 mb-6">
+              <div
+                class="bg-teal-500 h-2 rounded-full"
+                style="width: 80.7%"
+              ></div>
+            </div>
+            <div
+              class="flex justify-between text-sm text-slate-500 border-t pt-4"
+            >
+              <span>MAE: 51.39</span>
+              <span>RMSE: 78.02</span>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 max-w-4xl mx-auto mb-16"
+        >
+          <h4 class="text-center font-bold text-slate-700 mb-4">
+            Performance Metrics Comparison
+          </h4>
+          <canvas id="modelChart" height="150"></canvas>
+        </div>
+
+        <h3
+          class="text-xl font-bold mb-6 text-slate-800 border-l-4 border-teal-500 pl-4"
+        >
+          Model Visualization & Errors
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="chart-card">
+            <div class="p-3 bg-slate-100 font-bold text-center text-sm">
+              01. LR: Actual vs Predicted
+            </div>
+            <img
+              src="predictive_charts/01_lr_actual_vs_predicted.png"
+              class="w-full"
+              alt="LR Pred"
+            />
+          </div>
+          <div class="chart-card ring-2 ring-teal-500">
+            <div
+              class="p-3 bg-teal-50 font-bold text-center text-sm text-teal-900"
+            >
+              02. DT: Actual vs Predicted (Winner)
+            </div>
+            <img
+              src="predictive_charts/02_dt_actual_vs_predicted.png"
+              class="w-full"
+              alt="DT Pred"
+            />
+          </div>
+
+          <div class="chart-card">
+            <div class="p-3 bg-slate-100 font-bold text-center text-sm">
+              03. LR Residual Plot
+            </div>
+            <img
+              src="predictive_charts/03_lr_residual_plot.png"
+              class="w-full"
+              alt="LR Res"
+            />
+          </div>
+          <div class="chart-card">
+            <div
+              class="p-3 bg-teal-50 font-bold text-center text-sm text-teal-900"
+            >
+              04. DT Residual Plot
+            </div>
+            <img
+              src="predictive_charts/04_dt_residual_plot.png"
+              class="w-full"
+              alt="DT Res"
+            />
+          </div>
+
+          <div class="chart-card">
+            <div class="p-3 bg-slate-100 font-bold text-center text-sm">
+              05. LR Residual Dist
+            </div>
+            <img
+              src="predictive_charts/05_lr_residual_distribution.png"
+              class="w-full"
+              alt="LR Dist"
+            />
+          </div>
+          <div class="chart-card">
+            <div
+              class="p-3 bg-teal-50 font-bold text-center text-sm text-teal-900"
+            >
+              06. DT Residual Dist
+            </div>
+            <img
+              src="predictive_charts/06_dt_residual_distribution.png"
+              class="w-full"
+              alt="DT Dist"
+            />
+          </div>
+
+          <div class="chart-card">
+            <div class="p-3 bg-slate-100 font-bold text-center text-sm">
+              07. Feature Importance
+            </div>
+            <img
+              src="predictive_charts/07_feature_importance.png"
+              class="w-full"
+              alt="Importance"
+            />
+          </div>
+          <div class="chart-card">
+            <div class="p-3 bg-slate-100 font-bold text-center text-sm">
+              08. Model Comparison
+            </div>
+            <img
+              src="predictive_charts/08_model_comparison.png"
+              class="w-full"
+              alt="Comparison"
+            />
+          </div>
+
+          <div class="chart-card">
+            <div class="p-3 bg-slate-100 font-bold text-center text-sm">
+              09. Error by Hour
+            </div>
+            <img
+              src="predictive_charts/09_error_by_hour.png"
+              class="w-full"
+              alt="Err Hour"
+            />
+          </div>
+          <div class="chart-card">
+            <div class="p-3 bg-slate-100 font-bold text-center text-sm">
+              10. Error by Season
+            </div>
+            <img
+              src="predictive_charts/10_error_by_season.png"
+              class="w-full"
+              alt="Err Season"
+            />
+          </div>
+          <div class="chart-card">
+            <div class="p-3 bg-slate-100 font-bold text-center text-sm">
+              11. Error by Weather
+            </div>
+            <img
+              src="predictive_charts/11_error_by_weather.png"
+              class="w-full"
+              alt="Err Weather"
+            />
+          </div>
+          <div class="chart-card">
+            <div class="p-3 bg-slate-100 font-bold text-center text-sm">
+              12. Combined Comparison
+            </div>
+            <img
+              src="predictive_charts/12_combined_comparison.png"
+              class="w-full"
+              alt="Combined"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="code" class="py-20 bg-slate-900 text-slate-300">
+      <div class="container mx-auto px-6">
+        <h2 class="text-3xl font-bold text-white mb-8">Core Analysis Logic</h2>
+
+        <div class="grid md:grid-cols-2 gap-8">
+          <div>
+            <h3 class="text-teal-400 font-bold mb-3">
+              1. Descriptive Statistics
+            </h3>
+            <div
+              class="bg-black/50 p-4 rounded-xl border border-slate-700 font-mono text-xs overflow-x-auto shadow-xl h-64"
+            >
+              <pre><code class="language-python"><span class="code-keyword">def</span> <span class="code-func">compute_basic_statistics</span>(self):
+    numeric_cols = [<span class="code-string">'total_rentals'</span>, <span class="code-string">'casual_users'</span>, <span class="code-string">'registered_users'</span>, 
+                   <span class="code-string">'temp'</span>, <span class="code-string">'feeling_temperature'</span>, <span class="code-string">'humidity'</span>, <span class="code-string">'windspeed'</span>]
+    rows = []
+    <span class="code-keyword">for</span> col <span class="code-keyword">in</span> numeric_cols:
+        s = self.data[col].dropna()
+        rows.append({
+            <span class="code-string">'Variable'</span>: col, 
+            <span class="code-string">'Count'</span>: int(s.count()), 
+            <span class="code-string">'Mean'</span>: float(s.mean()), 
+            <span class="code-string">'Median'</span>: float(s.median()), 
+            <span class="code-string">'Std'</span>: float(s.std()), 
+            <span class="code-string">'Min'</span>: float(s.min()), 
+            <span class="code-string">'Max'</span>: float(s.max())
+        })
+    self.basic_stats = pd.DataFrame(rows)
+    <span class="code-keyword">return</span> self.basic_stats</code></pre>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-teal-400 font-bold mb-3">
+              2. Correlation Analysis
+            </h3>
+            <div
+              class="bg-black/50 p-4 rounded-xl border border-slate-700 font-mono text-xs overflow-x-auto shadow-xl h-64"
+            >
+              <pre><code class="language-python"><span class="code-keyword">def</span> <span class="code-func">compute_correlations</span>(self):
+    <span class="code-comment"># Calculate Pearson correlation coefficient</span>
+    self.correlation_matrix = self.data.corr(method=<span class="code-string">'pearson'</span>)
+    <span class="code-keyword">return</span> self.correlation_matrix
+
+<span class="code-keyword">def</span> <span class="code-func">find_strongest_correlations</span>(self, threshold=0.3):
+    target = <span class="code-string">'total_rentals'</span>
+    <span class="code-comment"># Filter for correlations stronger than threshold (0.3)</span>
+    corr_series = self.correlation_matrix[target].drop(target).abs()
+    strong_corr = corr_series[corr_series > threshold]
+    <span class="code-keyword">return</span> strong_corr.sort_values(ascending=False)</code></pre>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-teal-400 font-bold mb-3">
+              3. Linear Regression Training
+            </h3>
+            <div
+              class="bg-black/50 p-4 rounded-xl border border-slate-700 font-mono text-xs overflow-x-auto shadow-xl h-64"
+            >
+              <pre><code class="language-python"><span class="code-keyword">def</span> <span class="code-func">train_linear_regression</span>(self):
+    self.lr_model = LinearRegression()
+    self.lr_model.fit(self.X_train, self.y_train)
+    
+    y_pred_test = self.lr_model.predict(self.X_test)
+    
+    self.results[<span class="code-string">'lr'</span>] = {
+        <span class="code-string">'test_r2'</span>: r2_score(self.y_test, y_pred_test),
+        <span class="code-string">'mae'</span>: mean_absolute_error(self.y_test, y_pred_test),
+        <span class="code-string">'rmse'</span>: np.sqrt(mean_squared_error(self.y_test, y_pred_test))
+    }
+    <span class="code-keyword">return</span> self.lr_model</code></pre>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-teal-400 font-bold mb-3">
+              4. Decision Tree Training
+            </h3>
+            <div
+              class="bg-black/50 p-4 rounded-xl border border-slate-700 font-mono text-xs overflow-x-auto shadow-xl h-64"
+            >
+              <pre><code class="language-python"><span class="code-keyword">def</span> <span class="code-func">train_decision_tree</span>(self, max_depth=10):
+    <span class="code-comment"># Initialize with optimized depth</span>
+    self.dt_model = DecisionTreeRegressor(max_depth=max_depth, random_state=42)
+    self.dt_model.fit(self.X_train, self.y_train)
+    
+    y_pred_test = self.dt_model.predict(self.X_test)
+    
+    <span class="code-comment"># Store performance metrics</span>
+    self.results[<span class="code-string">'dt'</span>] = {
+        <span class="code-string">'test_r2'</span>: r2_score(self.y_test, y_pred_test),
+        <span class="code-string">'mae'</span>: mean_absolute_error(self.y_test, y_pred_test),
+        <span class="code-string">'rmse'</span>: np.sqrt(mean_squared_error(self.y_test, y_pred_test))
+    }
+    <span class="code-keyword">return</span> self.dt_model</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="bg-white border-t border-slate-200 py-10">
+      <div class="container mx-auto px-6 text-center">
+        <p class="text-slate-600 font-semibold">
+          Group 1 • Bike Sharing Analysis
+        </p>
+        <p class="text-slate-400 text-sm mt-2">
+          &copy; 2025 Midterm Project. All rights reserved.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      const ctx = document.getElementById("modelChart").getContext("2d");
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: [
+            "R² Score (Higher is Better)",
+            "MAE (Lower is Better)",
+            "RMSE (Lower is Better)",
+          ],
+          datasets: [
+            {
+              label: "Linear Regression",
+              data: [0.3455, 106.75, 143.96],
+              backgroundColor: "#94a3b8",
+              borderRadius: 6,
+            },
+            {
+              label: "Decision Tree",
+              data: [0.8078, 51.39, 78.02],
+              backgroundColor: "#14b8a6",
+              borderRadius: 6,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: "bottom" },
+          },
+          scales: {
+            y: { beginAtZero: true },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
