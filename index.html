@@ -598,6 +598,118 @@
           </p>
         </div>
 
+        <section id="pearson" class="pb-20">
+  <div class="container mx-auto px-6">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl font-bold text-slate-900 mb-4">
+        Why Pearson Correlation?
+      </h2>
+      <p class="text-slate-600 text-lg max-w-2xl mx-auto">
+        We compared Pearson against other correlation methods to justify why it
+        best fits our dataset and research goal: measuring how strongly each
+        factor is linearly associated with hourly rental demand.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 max-w-5xl mx-auto">
+      <!-- Pearson (Winner) -->
+      <div
+        class="bg-white p-8 rounded-2xl shadow-lg border-2 border-teal-500 relative transform md:-translate-y-4"
+      >
+        <div
+          class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-teal-500 text-white px-4 py-1 text-xs font-bold uppercase rounded-full tracking-wide"
+        >
+          Chosen Method
+        </div>
+
+        <h3 class="text-xl font-bold text-teal-700 mb-4">Pearson (r)</h3>
+
+        <ul class="space-y-3 text-slate-600 text-sm leading-relaxed">
+          <li class="flex gap-2">
+            <i class="fa-solid fa-check text-teal-600 mt-0.5"></i>
+            <span>
+              Best for <span class="font-semibold">linear relationships</span> between
+              numeric variables (e.g., temperature vs rentals).
+            </span>
+          </li>
+          <li class="flex gap-2">
+            <i class="fa-solid fa-check text-teal-600 mt-0.5"></i>
+            <span>
+              Produces a clear coefficient from
+              <span class="font-semibold">-1 to +1</span> (direction + strength).
+            </span>
+          </li>
+          <li class="flex gap-2">
+            <i class="fa-solid fa-check text-teal-600 mt-0.5"></i>
+            <span>
+              Works well for our goal: quickly identifying
+              <span class="font-semibold">top demand drivers</span> and checking
+              <span class="font-semibold">multicollinearity</span>.
+            </span>
+          </li>
+        </ul>
+
+        <div class="border-t border-slate-100 mt-6 pt-4 text-sm text-slate-500">
+          <span class="font-semibold text-slate-700">Interpretation:</span>
+          r &gt; 0 means higher X tends to align with higher rentals; r &lt; 0 means the opposite.
+        </div>
+      </div>
+
+      <!-- Spearman / Kendall -->
+      <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+        <h3 class="text-xl font-bold text-slate-700 mb-4">
+          Spearman (ρ) / Kendall (τ)
+        </h3>
+
+        <ul class="space-y-3 text-slate-600 text-sm leading-relaxed">
+          <li class="flex gap-2">
+            <i class="fa-solid fa-circle-info text-slate-500 mt-0.5"></i>
+            <span>
+              Better when the relationship is
+              <span class="font-semibold">monotonic but not linear</span>
+              (consistently increasing/decreasing with curves).
+            </span>
+          </li>
+          <li class="flex gap-2">
+            <i class="fa-solid fa-circle-info text-slate-500 mt-0.5"></i>
+            <span>
+              Uses <span class="font-semibold">ranks</span>, so it’s more robust to
+              outliers and non-normal data.
+            </span>
+          </li>
+          <li class="flex gap-2">
+            <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5"></i>
+            <span>
+              Less aligned with our main objective, since we focused on
+              <span class="font-semibold">linear association strength</span> and interpretability.
+            </span>
+          </li>
+        </ul>
+
+        <div class="border-t border-slate-100 mt-6 pt-4 text-sm text-slate-500">
+          <span class="font-semibold text-slate-700">Best used when:</span>
+          data is ordinal, heavily skewed, or relationships are curved but consistent.
+        </div>
+      </div>
+    </div>
+
+    <!-- Extra explanation card -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 max-w-5xl mx-auto">
+      <h4 class="font-bold text-slate-800 mb-2">
+        What correlation does (and doesn’t) mean
+      </h4>
+      <p class="text-slate-600 text-sm leading-relaxed">
+        Correlation helps us identify which variables move together with demand,
+        but it does <span class="font-semibold">not prove causation</span>.
+        Pearson specifically captures <span class="font-semibold">linear</span>
+        patterns—so some relationships may be real but appear weaker if they are
+        non-linear.
+      </p>
+    </div>
+  </div>
+</section>
+
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
           <div class="chart-card shadow-lg">
             <div
