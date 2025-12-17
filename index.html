@@ -91,7 +91,8 @@
         <div class="flex items-center gap-2">
           <i class="fas fa-bicycle text-2xl text-teal-600"></i>
           <span class="text-xl font-bold tracking-tight"
-            >Group 1 <span class="text-teal-600">Bike-Sharing Analysis</span></span
+            >Group 1
+            <span class="text-teal-600">Bike-Sharing Analysis</span></span
           >
         </div>
         <div
@@ -194,15 +195,19 @@
       </div>
     </section>
 
-    <section id="preprocessing" class="py-20 bg-white border-b border-slate-200">
+    <section
+      id="preprocessing"
+      class="py-20 bg-white border-b border-slate-200"
+    >
       <div class="container mx-auto px-6">
         <div class="max-w-3xl mb-10">
           <h2 class="text-3xl font-bold text-slate-900 mb-3">
             Data Cleaning & Variables Selected
           </h2>
           <p class="text-slate-600 text-lg leading-relaxed">
-            Below is a plain-language summary of how we cleaned the dataset and which information we used
-            for each part of the analysis (descriptive, correlation, and prediction).
+            Below is a plain-language summary of how we cleaned the dataset and
+            which information we used for each part of the analysis
+            (descriptive, correlation, and prediction).
           </p>
         </div>
 
@@ -213,45 +218,51 @@
             </h3>
             <div class="text-sm text-slate-600 mb-4">
               Output file:
-              <span class="font-semibold">MailigCruzGalopeTorrefrancaTamondong_CleanedDataset.csv</span>
+              <span class="font-semibold"
+                >MailigCruzGalopeTorrefrancaTamondong_CleanedDataset.csv</span
+              >
             </div>
             <ol class="list-decimal pl-5 space-y-3 text-slate-700">
               <li>
-                <span class="font-semibold">Handle missing values</span>:
-                remove rows missing key fields (rentals and basic weather), then fill any remaining missing
-                numeric values using a typical middle value (the median).
+                <span class="font-semibold">Handle missing values</span>: remove
+                rows missing key fields (rentals and basic weather), then fill
+                any remaining missing numeric values using a typical middle
+                value (the median).
               </li>
               <li>
-                <span class="font-semibold">Remove duplicates</span>:
-                drop repeated rows so each record is counted once.
+                <span class="font-semibold">Remove duplicates</span>: drop
+                repeated rows so each record is counted once.
               </li>
               <li>
-                <span class="font-semibold">Handle extreme outliers</span>:
-                for total, casual, and registered rentals, unusually extreme values are limited (“capped”)
-                to a reasonable boundary so they don’t dominate the results.
+                <span class="font-semibold">Handle extreme outliers</span>: for
+                total, casual, and registered rentals, unusually extreme values
+                are limited (“capped”) to a reasonable boundary so they don’t
+                dominate the results.
               </li>
               <li>
-                <span class="font-semibold">Scale weather values if needed</span>:
-                temperature, “feels-like” temperature, humidity, and windspeed are only scaled if their
-                values are not already in a 0–1 range.
+                <span class="font-semibold">Scale weather values if needed</span
+                >: temperature, “feels-like” temperature, humidity, and
+                windspeed are only scaled if their values are not already in a
+                0–1 range.
               </li>
               <li>
-                <span class="font-semibold">Fix data types</span>:
-                ensure time/category fields are stored as whole numbers and weather values as decimals.
+                <span class="font-semibold">Fix data types</span>: ensure
+                time/category fields are stored as whole numbers and weather
+                values as decimals.
               </li>
               <li>
                 <span class="font-semibold">Rename columns for clarity</span>:
-                convert abbreviated column names into clearer names (e.g., hour/month/year, total rentals,
-                humidity, weather situation).
+                convert abbreviated column names into clearer names (e.g.,
+                hour/month/year, total rentals, humidity, weather situation).
               </li>
               <li>
-                <span class="font-semibold">Add readable labels</span>:
-                create text labels for season (Spring/Summer/Fall/Winter) and weather (Clear, Mist/Cloudy,
-                Light Rain/Snow, Heavy Rain/Snow).
+                <span class="font-semibold">Add readable labels</span>: create
+                text labels for season (Spring/Summer/Fall/Winter) and weather
+                (Clear, Mist/Cloudy, Light Rain/Snow, Heavy Rain/Snow).
               </li>
               <li>
-                <span class="font-semibold">Validate ranges</span>:
-                check that hour is between 0–23 and month is between 1–12.
+                <span class="font-semibold">Validate ranges</span>: check that
+                hour is between 0–23 and month is between 1–12.
               </li>
               <li>
                 <span class="font-semibold">Export the cleaned dataset</span>:
@@ -267,92 +278,180 @@
 
             <div class="space-y-5 text-slate-700">
               <div>
-                <div class="font-semibold text-slate-900 mb-2">Descriptive Analysis</div>
+                <div class="font-semibold text-slate-900 mb-2">
+                  Descriptive Analysis
+                </div>
                 <div class="text-sm text-slate-600 mb-2">
-                  Used to summarize patterns (by hour/day/month/season/weather) and compare groups.
+                  Used to summarize patterns (by hour/day/month/season/weather)
+                  and compare groups.
                 </div>
                 <div class="space-y-2 text-sm">
                   <div>
                     <span class="font-semibold">What we measure:</span>
                     <span class="ml-1 inline-flex flex-wrap gap-2">
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Total rentals</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Casual users</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Registered users</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Total rentals</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Casual users</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Registered users</span
+                      >
                     </span>
                   </div>
                   <div>
                     <span class="font-semibold">Time factors:</span>
                     <span class="ml-1 inline-flex flex-wrap gap-2">
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Hour</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Weekday</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Working day</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Month</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Season</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Year</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Holiday</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Hour</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Weekday</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Working day</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Month</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Season</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Year</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Holiday</span
+                      >
                     </span>
                   </div>
                   <div>
                     <span class="font-semibold">Weather factors:</span>
                     <span class="ml-1 inline-flex flex-wrap gap-2">
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Weather situation</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Temperature</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Feels-like temperature</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Humidity</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Windspeed</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Weather situation</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Temperature</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Feels-like temperature</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Humidity</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Windspeed</span
+                      >
                     </span>
                   </div>
                 </div>
               </div>
 
               <div class="border-t border-slate-200 pt-5">
-                <div class="font-semibold text-slate-900 mb-2">Correlation Analysis</div>
+                <div class="font-semibold text-slate-900 mb-2">
+                  Correlation Analysis
+                </div>
                 <div class="text-sm text-slate-600 mb-2">
-                  Used to check which factors move together with rentals (e.g., weather, time, and user types).
+                  Used to check which factors move together with rentals (e.g.,
+                  weather, time, and user types).
                 </div>
                 <div class="text-sm inline-flex flex-wrap gap-2">
-                  <span class="px-2 py-1 bg-slate-100 rounded-full">Temperature</span>
-                  <span class="px-2 py-1 bg-slate-100 rounded-full">Feels-like temperature</span>
-                  <span class="px-2 py-1 bg-slate-100 rounded-full">Humidity</span>
-                  <span class="px-2 py-1 bg-slate-100 rounded-full">Windspeed</span>
-                  <span class="px-2 py-1 bg-slate-100 rounded-full">Season</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full"
+                    >Temperature</span
+                  >
+                  <span class="px-2 py-1 bg-slate-100 rounded-full"
+                    >Feels-like temperature</span
+                  >
+                  <span class="px-2 py-1 bg-slate-100 rounded-full"
+                    >Humidity</span
+                  >
+                  <span class="px-2 py-1 bg-slate-100 rounded-full"
+                    >Windspeed</span
+                  >
+                  <span class="px-2 py-1 bg-slate-100 rounded-full"
+                    >Season</span
+                  >
                   <span class="px-2 py-1 bg-slate-100 rounded-full">Month</span>
                   <span class="px-2 py-1 bg-slate-100 rounded-full">Hour</span>
-                  <span class="px-2 py-1 bg-slate-100 rounded-full">Weekday</span>
-                  <span class="px-2 py-1 bg-slate-100 rounded-full">Holiday</span>
-                  <span class="px-2 py-1 bg-slate-100 rounded-full">Working day</span>
-                  <span class="px-2 py-1 bg-slate-100 rounded-full">Weather situation</span>
-                  <span class="px-2 py-1 bg-slate-100 rounded-full">Casual users</span>
-                  <span class="px-2 py-1 bg-slate-100 rounded-full">Registered users</span>
-                  <span class="px-2 py-1 bg-slate-100 rounded-full">Total rentals</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full"
+                    >Weekday</span
+                  >
+                  <span class="px-2 py-1 bg-slate-100 rounded-full"
+                    >Holiday</span
+                  >
+                  <span class="px-2 py-1 bg-slate-100 rounded-full"
+                    >Working day</span
+                  >
+                  <span class="px-2 py-1 bg-slate-100 rounded-full"
+                    >Weather situation</span
+                  >
+                  <span class="px-2 py-1 bg-slate-100 rounded-full"
+                    >Casual users</span
+                  >
+                  <span class="px-2 py-1 bg-slate-100 rounded-full"
+                    >Registered users</span
+                  >
+                  <span class="px-2 py-1 bg-slate-100 rounded-full"
+                    >Total rentals</span
+                  >
                 </div>
               </div>
 
               <div class="border-t border-slate-200 pt-5">
-                <div class="font-semibold text-slate-900 mb-2">Predictive Modeling</div>
+                <div class="font-semibold text-slate-900 mb-2">
+                  Predictive Modeling
+                </div>
                 <div class="text-sm text-slate-600 mb-2">
-                  Used to predict the number of rentals using time and weather information.
+                  Used to predict the number of rentals using time and weather
+                  information.
                 </div>
                 <div class="text-sm space-y-2">
                   <div>
                     <span class="font-semibold">Inputs used:</span>
                     <span class="ml-1 inline-flex flex-wrap gap-2">
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Hour</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Weekday</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Working day</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Month</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Season</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Temperature</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Feels-like temperature</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Humidity</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Windspeed</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Weather situation</span>
-                      <span class="px-2 py-1 bg-slate-100 rounded-full">Holiday</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Hour</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Weekday</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Working day</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Month</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Season</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Temperature</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Feels-like temperature</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Humidity</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Windspeed</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Weather situation</span
+                      >
+                      <span class="px-2 py-1 bg-slate-100 rounded-full"
+                        >Holiday</span
+                      >
                     </span>
                   </div>
                   <div>
                     <span class="font-semibold">What we predict:</span>
-                    <span class="ml-1 px-2 py-1 bg-teal-50 text-teal-800 rounded-full">Total rentals</span>
+                    <span
+                      class="ml-1 px-2 py-1 bg-teal-50 text-teal-800 rounded-full"
+                      >Total rentals</span
+                    >
                   </div>
                 </div>
               </div>
@@ -388,8 +487,9 @@
               loading="lazy"
             />
             <div class="p-4 text-sm text-slate-600">
-              Rentals are <span class="font-semibold">right-skewed</span>: most hours are below the mean
-              (mean ≈ 189 vs median ≈ 142), with occasional high-demand spikes.
+              Rentals are <span class="font-semibold">right-skewed</span>: most
+              hours are below the mean (mean ≈ 189 vs median ≈ 142), with
+              occasional high-demand spikes.
             </div>
           </div>
           <div class="chart-card">
@@ -405,9 +505,10 @@
               loading="lazy"
             />
             <div class="p-4 text-sm text-slate-600">
-              Strong commute pattern: demand peaks at <span class="font-semibold">17:00 (~461)</span> and
-              remains high at <span class="font-semibold">18:00 (~426)</span>; the quietest hour is
-              <span class="font-semibold">04:00 (~6)</span>.
+              Strong commute pattern: demand peaks at
+              <span class="font-semibold">17:00 (~461)</span> and remains high
+              at <span class="font-semibold">18:00 (~426)</span>; the quietest
+              hour is <span class="font-semibold">04:00 (~6)</span>.
             </div>
           </div>
           <div class="chart-card">
@@ -423,8 +524,9 @@
               loading="lazy"
             />
             <div class="p-4 text-sm text-slate-600">
-              Weekday averages are relatively close; <span class="font-semibold">Thursday (~196)</span> is
-              highest, while <span class="font-semibold">Sunday (~177)</span> is lowest.
+              Weekday averages are relatively close;
+              <span class="font-semibold">Thursday (~196)</span> is highest,
+              while <span class="font-semibold">Sunday (~177)</span> is lowest.
             </div>
           </div>
           <div class="chart-card">
@@ -440,8 +542,9 @@
               loading="lazy"
             />
             <div class="p-4 text-sm text-slate-600">
-              Clear seasonality: demand peaks in <span class="font-semibold">September (~241)</span> and is
-              lowest in <span class="font-semibold">January (~94)</span>.
+              Clear seasonality: demand peaks in
+              <span class="font-semibold">September (~241)</span> and is lowest
+              in <span class="font-semibold">January (~94)</span>.
             </div>
           </div>
           <div class="chart-card">
@@ -457,7 +560,8 @@
               loading="lazy"
             />
             <div class="p-4 text-sm text-slate-600">
-              <span class="font-semibold">Fall</span> has the highest average rentals (~236), while
+              <span class="font-semibold">Fall</span> has the highest average
+              rentals (~236), while
               <span class="font-semibold">Spring</span> has the lowest (~111).
             </div>
           </div>
@@ -474,9 +578,11 @@
               loading="lazy"
             />
             <div class="p-4 text-sm text-slate-600">
-              Weather strongly affects demand: <span class="font-semibold">Clear</span> conditions average
-              ~205 rentals, dropping to ~112 for <span class="font-semibold">Light Rain/Snow</span> and
-              ~74 for <span class="font-semibold">Heavy Rain/Snow</span>.
+              Weather strongly affects demand:
+              <span class="font-semibold">Clear</span> conditions average ~205
+              rentals, dropping to ~112 for
+              <span class="font-semibold">Light Rain/Snow</span> and ~74 for
+              <span class="font-semibold">Heavy Rain/Snow</span>.
             </div>
           </div>
           <div class="chart-card">
@@ -492,8 +598,9 @@
               loading="lazy"
             />
             <div class="p-4 text-sm text-slate-600">
-              Overall positive relationship: rentals tend to increase as temperature rises, but with wide
-              variability due to time-of-day and other factors.
+              Overall positive relationship: rentals tend to increase as
+              temperature rises, but with wide variability due to time-of-day
+              and other factors.
             </div>
           </div>
           <div class="chart-card">
@@ -509,8 +616,8 @@
               loading="lazy"
             />
             <div class="p-4 text-sm text-slate-600">
-              Higher humidity generally corresponds to lower demand, though the relationship is weaker and
-              noisier than time-based patterns.
+              Higher humidity generally corresponds to lower demand, though the
+              relationship is weaker and noisier than time-based patterns.
             </div>
           </div>
           <div class="chart-card">
@@ -526,7 +633,8 @@
               loading="lazy"
             />
             <div class="p-4 text-sm text-slate-600">
-              As windspeed increases, rentals tend to decrease slightly—suggesting wind is a mild deterrent.
+              As windspeed increases, rentals tend to decrease
+              slightly—suggesting wind is a mild deterrent.
             </div>
           </div>
           <div class="chart-card">
@@ -542,8 +650,8 @@
               loading="lazy"
             />
             <div class="p-4 text-sm text-slate-600">
-              Working days show slightly higher central demand (avg ~193) than non-working days (avg ~181),
-              consistent with commute-driven usage.
+              Working days show slightly higher central demand (avg ~193) than
+              non-working days (avg ~181), consistent with commute-driven usage.
             </div>
           </div>
           <div class="chart-card">
@@ -559,7 +667,8 @@
               loading="lazy"
             />
             <div class="p-4 text-sm text-slate-600">
-              Holidays have lower demand on average (avg ~157) compared with non-holidays (avg ~190).
+              Holidays have lower demand on average (avg ~157) compared with
+              non-holidays (avg ~190).
             </div>
           </div>
           <div class="chart-card">
@@ -575,8 +684,9 @@
               loading="lazy"
             />
             <div class="p-4 text-sm text-slate-600">
-              Demand clusters on weekdays during commute windows (morning and late afternoon), with the
-              strongest hotspot around <span class="font-semibold">17:00</span>.
+              Demand clusters on weekdays during commute windows (morning and
+              late afternoon), with the strongest hotspot around
+              <span class="font-semibold">17:00</span>.
             </div>
           </div>
         </div>
@@ -599,116 +709,146 @@
         </div>
 
         <section id="pearson" class="pb-20">
-  <div class="container mx-auto px-6">
-    <div class="text-center mb-16">
-      <h2 class="text-3xl font-bold text-slate-900 mb-4">
-        Why Pearson Correlation?
-      </h2>
-      <p class="text-slate-600 text-lg max-w-2xl mx-auto">
-        We compared Pearson against other correlation methods to justify why it
-        best fits our dataset and research goal: measuring how strongly each
-        factor is linearly associated with hourly rental demand.
-      </p>
-    </div>
+          <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+              <h2 class="text-3xl font-bold text-slate-900 mb-4">
+                Why Pearson Correlation?
+              </h2>
+              <p class="text-slate-600 text-lg max-w-2xl mx-auto">
+                We compared Pearson against other correlation methods to justify
+                why it best fits our dataset and research goal: measuring how
+                strongly each factor is linearly associated with hourly rental
+                demand.
+              </p>
+            </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 max-w-5xl mx-auto">
-      <!-- Pearson (Winner) -->
-      <div
-        class="bg-white p-8 rounded-2xl shadow-lg border-2 border-teal-500 relative transform md:-translate-y-4"
-      >
-        <div
-          class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-teal-500 text-white px-4 py-1 text-xs font-bold uppercase rounded-full tracking-wide"
-        >
-          Chosen Method
-        </div>
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 max-w-5xl mx-auto"
+            >
+              <div
+                class="bg-white p-8 rounded-2xl shadow-lg border-2 border-teal-500 relative transform md:-translate-y-4"
+              >
+                <div
+                  class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-teal-500 text-white px-4 py-1 text-xs font-bold uppercase rounded-full tracking-wide"
+                >
+                  Chosen Method
+                </div>
 
-        <h3 class="text-xl font-bold text-teal-700 mb-4">Pearson (r)</h3>
+                <h3 class="text-xl font-bold text-teal-700 mb-4">
+                  Pearson (r)
+                </h3>
 
-        <ul class="space-y-3 text-slate-600 text-sm leading-relaxed">
-          <li class="flex gap-2">
-            <i class="fa-solid fa-check text-teal-600 mt-0.5"></i>
-            <span>
-              Best for <span class="font-semibold">linear relationships</span> between
-              numeric variables (e.g., temperature vs rentals).
-            </span>
-          </li>
-          <li class="flex gap-2">
-            <i class="fa-solid fa-check text-teal-600 mt-0.5"></i>
-            <span>
-              Produces a clear coefficient from
-              <span class="font-semibold">-1 to +1</span> (direction + strength).
-            </span>
-          </li>
-          <li class="flex gap-2">
-            <i class="fa-solid fa-check text-teal-600 mt-0.5"></i>
-            <span>
-              Works well for our goal: quickly identifying
-              <span class="font-semibold">top demand drivers</span> and checking
-              <span class="font-semibold">multicollinearity</span>.
-            </span>
-          </li>
-        </ul>
+                <ul class="space-y-3 text-slate-600 text-sm leading-relaxed">
+                  <li class="flex gap-2">
+                    <i class="fa-solid fa-check text-teal-600 mt-0.5"></i>
+                    <span>
+                      Best for
+                      <span class="font-semibold">linear relationships</span>
+                      between numeric variables (e.g., temperature vs rentals).
+                    </span>
+                  </li>
+                  <li class="flex gap-2">
+                    <i class="fa-solid fa-check text-teal-600 mt-0.5"></i>
+                    <span>
+                      Produces a clear coefficient from
+                      <span class="font-semibold">-1 to +1</span> (direction +
+                      strength).
+                    </span>
+                  </li>
+                  <li class="flex gap-2">
+                    <i class="fa-solid fa-check text-teal-600 mt-0.5"></i>
+                    <span>
+                      Works well for our goal: quickly identifying
+                      <span class="font-semibold">top demand drivers</span> and
+                      checking
+                      <span class="font-semibold">multicollinearity</span>.
+                    </span>
+                  </li>
+                </ul>
 
-        <div class="border-t border-slate-100 mt-6 pt-4 text-sm text-slate-500">
-          <span class="font-semibold text-slate-700">Interpretation:</span>
-          r &gt; 0 means higher X tends to align with higher rentals; r &lt; 0 means the opposite.
-        </div>
-      </div>
+                <div
+                  class="border-t border-slate-100 mt-6 pt-4 text-sm text-slate-500"
+                >
+                  <span class="font-semibold text-slate-700"
+                    >Interpretation:</span
+                  >
+                  r &gt; 0 means higher X tends to align with higher rentals; r
+                  &lt; 0 means the opposite.
+                </div>
+              </div>
 
-      <!-- Spearman / Kendall -->
-      <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-        <h3 class="text-xl font-bold text-slate-700 mb-4">
-          Spearman (ρ) / Kendall (τ)
-        </h3>
+              <div
+                class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200"
+              >
+                <h3 class="text-xl font-bold text-slate-700 mb-4">
+                  Spearman (ρ) / Kendall (τ)
+                </h3>
 
-        <ul class="space-y-3 text-slate-600 text-sm leading-relaxed">
-          <li class="flex gap-2">
-            <i class="fa-solid fa-circle-info text-slate-500 mt-0.5"></i>
-            <span>
-              Better when the relationship is
-              <span class="font-semibold">monotonic but not linear</span>
-              (consistently increasing/decreasing with curves).
-            </span>
-          </li>
-          <li class="flex gap-2">
-            <i class="fa-solid fa-circle-info text-slate-500 mt-0.5"></i>
-            <span>
-              Uses <span class="font-semibold">ranks</span>, so it’s more robust to
-              outliers and non-normal data.
-            </span>
-          </li>
-          <li class="flex gap-2">
-            <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5"></i>
-            <span>
-              Less aligned with our main objective, since we focused on
-              <span class="font-semibold">linear association strength</span> and interpretability.
-            </span>
-          </li>
-        </ul>
+                <ul class="space-y-3 text-slate-600 text-sm leading-relaxed">
+                  <li class="flex gap-2">
+                    <i
+                      class="fa-solid fa-circle-info text-slate-500 mt-0.5"
+                    ></i>
+                    <span>
+                      Better when the relationship is
+                      <span class="font-semibold"
+                        >monotonic but not linear</span
+                      >
+                      (consistently increasing/decreasing with curves).
+                    </span>
+                  </li>
+                  <li class="flex gap-2">
+                    <i
+                      class="fa-solid fa-circle-info text-slate-500 mt-0.5"
+                    ></i>
+                    <span>
+                      Uses <span class="font-semibold">ranks</span>, so it’s
+                      more robust to outliers and non-normal data.
+                    </span>
+                  </li>
+                  <li class="flex gap-2">
+                    <i
+                      class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5"
+                    ></i>
+                    <span>
+                      Less aligned with our main objective, since we focused on
+                      <span class="font-semibold"
+                        >linear association strength</span
+                      >
+                      and interpretability.
+                    </span>
+                  </li>
+                </ul>
 
-        <div class="border-t border-slate-100 mt-6 pt-4 text-sm text-slate-500">
-          <span class="font-semibold text-slate-700">Best used when:</span>
-          data is ordinal, heavily skewed, or relationships are curved but consistent.
-        </div>
-      </div>
-    </div>
+                <div
+                  class="border-t border-slate-100 mt-6 pt-4 text-sm text-slate-500"
+                >
+                  <span class="font-semibold text-slate-700"
+                    >Best used when:</span
+                  >
+                  data is ordinal, heavily skewed, or relationships are curved
+                  but consistent.
+                </div>
+              </div>
+            </div>
 
-    <!-- Extra explanation card -->
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 max-w-5xl mx-auto">
-      <h4 class="font-bold text-slate-800 mb-2">
-        What correlation does (and doesn’t) mean
-      </h4>
-      <p class="text-slate-600 text-sm leading-relaxed">
-        Correlation helps us identify which variables move together with demand,
-        but it does <span class="font-semibold">not prove causation</span>.
-        Pearson specifically captures <span class="font-semibold">linear</span>
-        patterns—so some relationships may be real but appear weaker if they are
-        non-linear.
-      </p>
-    </div>
-  </div>
-</section>
-
+            <div
+              class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 max-w-5xl mx-auto"
+            >
+              <h4 class="font-bold text-slate-800 mb-2">
+                What correlation does (and doesn’t) mean
+              </h4>
+              <p class="text-slate-600 text-sm leading-relaxed">
+                Correlation helps us identify which variables move together with
+                demand, but it does
+                <span class="font-semibold">not prove causation</span>. Pearson
+                specifically captures <span class="font-semibold">linear</span>
+                patterns—so some relationships may be real but appear weaker if
+                they are non-linear.
+              </p>
+            </div>
+          </div>
+        </section>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
           <div class="chart-card shadow-lg">
