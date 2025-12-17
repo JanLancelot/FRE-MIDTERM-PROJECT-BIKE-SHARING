@@ -862,7 +862,12 @@
               class="w-full h-auto"
               alt="Heatmap"
             />
+            <div class="p-4 text-sm text-slate-600">
+              A full overview of Pearson correlations across all variables.
+              Darker colors indicate stronger positive/negative relationships.
+            </div>
           </div>
+
           <div class="chart-card shadow-lg">
             <div
               class="p-5 bg-teal-50 border-b border-teal-100 font-bold text-teal-800 text-center"
@@ -874,6 +879,11 @@
               class="w-full h-auto"
               alt="Rental Corr"
             />
+            <div class="p-4 text-sm text-slate-600">
+              Shows how strongly each factor relates to
+              <span class="font-semibold">total rentals</span>. Positive bars
+              increase with demand, while negative bars decrease with demand.
+            </div>
           </div>
         </div>
 
@@ -882,90 +892,233 @@
         >
           Individual Variable Correlations
         </h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 items-center">
           <div class="chart-card">
+            <div
+              class="p-3 bg-slate-100 font-semibold text-center text-xs text-slate-700"
+            >
+              Temperature
+            </div>
             <img
               src="correlation_graphs/individual/temp_correlations.png"
               class="w-full"
-              alt="Corr"
+              alt="Temperature correlations"
             />
+            <div class="p-3 text-xs text-slate-600">
+              Warmer temperatures align with higher demand, while humidity and
+              poor weather reduce rentals.
+            </div>
           </div>
+
           <div class="chart-card">
+            <div
+              class="p-3 bg-slate-100 font-semibold text-center text-xs text-slate-700"
+            >
+              Feeling Temperature
+            </div>
             <img
               src="correlation_graphs/individual/feeling_temperature_correlations.png"
               class="w-full"
-              alt="Corr"
+              alt="Feeling temperature correlations"
             />
+            <div class="p-3 text-xs text-slate-600">
+              Warmer “feels-like” temperatures align with higher demand, while
+              humidity, wind, and poor weather reduce it.
+            </div>
           </div>
+
           <div class="chart-card">
+            <div
+              class="p-3 bg-slate-100 font-semibold text-center text-xs text-slate-700"
+            >
+              Humidity
+            </div>
             <img
               src="correlation_graphs/individual/humidity_correlations.png"
               class="w-full"
-              alt="Corr"
+              alt="Humidity correlations"
             />
+            <div class="p-3 text-xs text-slate-600">
+              Higher humidity is associated with lower rentals, especially among
+              casual users, and aligns with poorer weather conditions.
+            </div>
           </div>
+
           <div class="chart-card">
+            <div
+              class="p-3 bg-slate-100 font-semibold text-center text-xs text-slate-700"
+            >
+              Windspeed
+            </div>
             <img
               src="correlation_graphs/individual/windspeed_correlations.png"
               class="w-full"
-              alt="Corr"
+              alt="Windspeed correlations"
             />
+            <div class="p-3 text-xs text-slate-600">
+              Higher windspeed is associated with lower rentals and higher
+              humidity, while showing only weak relationships with time-related
+              factors.
+            </div>
           </div>
+
           <div class="chart-card">
+            <div
+              class="p-3 bg-slate-100 font-semibold text-center text-xs text-slate-700"
+            >
+              Hour
+            </div>
             <img
               src="correlation_graphs/individual/hour_correlations.png"
               class="w-full"
-              alt="Corr"
+              alt="Hour correlations"
             />
+            <div class="p-3 text-xs text-slate-600">
+              Later hours are strongly associated with higher rentals,
+              especially among registered users, while humidity shows a negative
+              relationship.
+            </div>
           </div>
+
           <div class="chart-card">
+            <div
+              class="p-3 bg-slate-100 font-semibold text-center text-xs text-slate-700"
+            >
+              Season
+            </div>
             <img
               src="correlation_graphs/individual/season_correlations.png"
               class="w-full"
-              alt="Corr"
+              alt="Season correlations"
             />
+            <div class="p-3 text-xs text-slate-600">
+              Season is strongly aligned with month and temperature patterns,
+              with higher rentals during warmer seasons and weaker links to
+              calendar variables.
+            </div>
           </div>
+
           <div class="chart-card">
+            <div
+              class="p-3 bg-slate-100 font-semibold text-center text-xs text-slate-700"
+            >
+              Month
+            </div>
             <img
               src="correlation_graphs/individual/month_correlations.png"
               class="w-full"
-              alt="Corr"
+              alt="Month correlations"
             />
+            <div class="p-3 text-xs text-slate-600">
+              Month strongly reflects seasonal patterns, with higher rentals
+              during warmer months and weak relationships with daily timing
+              variables.
+            </div>
           </div>
+
           <div class="chart-card">
+            <div
+              class="p-3 bg-slate-100 font-semibold text-center text-xs text-slate-700"
+            >
+              Weekday
+            </div>
             <img
               src="correlation_graphs/individual/weekday_correlations.png"
               class="w-full"
-              alt="Corr"
+              alt="Weekday correlations"
             />
+            <div class="p-3 text-xs text-slate-600">
+              Weekday shows weak relationships with rentals, indicating that
+              demand patterns are not strongly driven by the day of the week
+              alone.
+            </div>
           </div>
+
           <div class="chart-card">
+            <div
+              class="p-3 bg-slate-100 font-semibold text-center text-xs text-slate-700"
+            >
+              Weather Situation
+            </div>
             <img
               src="correlation_graphs/individual/weather_situation_correlations.png"
               class="w-full"
-              alt="Corr"
+              alt="Weather situation correlations"
             />
+            <div class="p-3 text-xs text-slate-600">
+              Poorer weather conditions are associated with lower rentals,
+              especially among casual users, while higher humidity aligns with
+              worse weather.
+            </div>
           </div>
+
           <div class="chart-card">
+            <div
+              class="p-3 bg-slate-100 font-semibold text-center text-xs text-slate-700"
+            >
+              Working Day
+            </div>
             <img
               src="correlation_graphs/individual/workingday_correlations.png"
               class="w-full"
-              alt="Corr"
+              alt="Workingday correlations"
             />
+            <div class="p-3 text-xs text-slate-600">
+              Working days are strongly associated with registered users, while
+              casual usage and holidays show clear negative relationships.
+            </div>
           </div>
+
           <div class="chart-card">
+            <div
+              class="p-3 bg-slate-100 font-semibold text-center text-xs text-slate-700"
+            >
+              Holiday
+            </div>
             <img
               src="correlation_graphs/individual/holiday_correlations.png"
               class="w-full"
-              alt="Corr"
+              alt="Holiday correlations"
             />
+            <div class="p-3 text-xs text-slate-600">
+              Holidays are associated with reduced overall rentals and
+              registered usage, while casual usage shows a slight increase.
+            </div>
           </div>
+
           <div class="chart-card">
+            <div
+              class="p-3 bg-slate-100 font-semibold text-center text-xs text-slate-700"
+            >
+              Registered Users
+            </div>
             <img
               src="correlation_graphs/individual/registered_users_correlations.png"
               class="w-full"
-              alt="Corr"
+              alt="Registered users correlations"
             />
+            <div class="p-3 text-xs text-slate-600">
+              Registered users strongly drive total rentals and are most active
+              during warmer hours, while humidity, poor weather, and holidays
+              reduce usage.
+            </div>
+          </div>
+
+          <div class="chart-card md:col-start-2">
+            <div
+              class="p-3 bg-slate-100 font-semibold text-center text-xs text-slate-700"
+            >
+              Registered Users
+            </div>
+            <img
+              src="correlation_graphs/individual/casual_users_correlations.png"
+              class="w-full"
+              alt="Casual users correlations"
+            />
+            <div class="p-3 text-xs text-slate-600">
+              Casual users are most active during warm, non-working days and are
+              discouraged by humidity and poor weather.
+            </div>
           </div>
         </div>
       </div>
