@@ -452,7 +452,7 @@ class BikeDataCurator:
             out_df = pd.DataFrame([{'Section': 'OUTLIERS', 'Msg': 'total_rentals not found'}])
 
         self.descriptive_data = pd.concat([plan_df, basic_df, tabs_df, comp_df, dist_df, out_df], 
-                                         ignore_index=True, sort=False)
+                                          ignore_index=True, sort=False)
 
         self.descriptive_data.to_csv(output_path, index=False)
         print(f"✓ Descriptive dataset created: {output_path}")
@@ -766,9 +766,9 @@ class CorrelationAnalyzer:
             corr_casual_total = self.correlation_matrix.loc['casual_users', 'total_rentals']
             corr_registered_total = self.correlation_matrix.loc['registered_users', 'total_rentals']
             
-            print(f"Casual vs Registered:     {corr_casual_registered:>7.4f} ({self._classify_strength(abs(corr_casual_registered))})")
-            print(f"Casual vs Total:          {corr_casual_total:>7.4f} ({self._classify_strength(abs(corr_casual_total))})")
-            print(f"Registered vs Total:      {corr_registered_total:>7.4f} ({self._classify_strength(abs(corr_registered_total))})")
+            print(f"Casual vs Registered:      {corr_casual_registered:>7.4f} ({self._classify_strength(abs(corr_casual_registered))})")
+            print(f"Casual vs Total:           {corr_casual_total:>7.4f} ({self._classify_strength(abs(corr_casual_total))})")
+            print(f"Registered vs Total:       {corr_registered_total:>7.4f} ({self._classify_strength(abs(corr_registered_total))})")
             
             return {
                 'casual_registered': corr_casual_registered,
@@ -821,8 +821,8 @@ class CorrelationAnalyzer:
         
         if high_corr_pairs:
             df_pairs = pd.DataFrame(high_corr_pairs).sort_values('Correlation', 
-                                                                   key=abs, 
-                                                                   ascending=False)
+                                                                 key=abs, 
+                                                                 ascending=False)
             print(df_pairs.to_string(index=False))
         else:
             print("✓ No significant multicollinearity detected")
@@ -1224,6 +1224,76 @@ class PredictiveAnalyzer:
         
         return results_df
     
+# --- INSERTED: LAYMAN GRAPH METHOD (FIXED LABEL OVERLAP) ---
+    def visualize_layman_comparison(self, output_dir='predictive_charts', samples=20):
+        """
+        Creates a simple, non-technical bar chart comparing Actual vs Predicted
+        for a small sample of data points.
+        """
+        if not self.results:
+            print("✗ Please train models first")
+            return
+
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # 1. Determine the best model based on R2 score
+        lr_r2 = self.results['lr']['test_r2']
+        dt_r2 = self.results['dt']['test_r2']
+        
+        if dt_r2 > lr_r2:
+            model_name = "Decision Tree"
+            predictions = self.results['dt']['test_predictions']
+            color_pred = '#55a868' # Greenish
+        else:
+            model_name = "Linear Regression"
+            predictions = self.results['lr']['test_predictions']
+            color_pred = '#4c72b0' # Blueish
+
+        # 2. Create a small DataFrame for easier plotting
+        comparison_df = pd.DataFrame({
+            'Actual': self.y_test.values,
+            'Predicted': predictions
+        })
+
+        # 3. Take a random sample (or first N items) to make the chart readable
+        # We use the first N items of the test set for consistency
+        sample_df = comparison_df.head(samples).reset_index(drop=True)
+
+        # 4. Plotting
+        fig, ax = plt.subplots(figsize=(12, 6))
+        
+        # Position of bars on x-axis
+        x = np.arange(len(sample_df))
+        width = 0.35
+
+        # Create bars
+        rects1 = ax.bar(x - width/2, sample_df['Actual'], width, label='Reality (Actual Rentals)', color='#808080', alpha=0.8)
+        rects2 = ax.bar(x + width/2, sample_df['Predicted'], width, label=f'AI Prediction ({model_name})', color=color_pred)
+
+        # Add some text for labels, title and custom x-axis tick labels, etc.
+        ax.set_ylabel('Number of Bike Rentals', fontsize=12)
+        ax.set_title('Reality vs. Prediction: How Close Was the AI?', fontsize=16, fontweight='bold')
+        ax.set_xlabel('Sample Test Cases (Individual Hours)', fontsize=12)
+        
+        ax.set_xticks(x)
+        # --- FIX: Added rotation and alignment here ---
+        ax.set_xticklabels([f'Case {i+1}' for i in x], rotation=45, ha='right')
+        
+        ax.legend(fontsize=11)
+
+        # Add a simple grid
+        ax.grid(axis='y', linestyle='--', alpha=0.3)
+
+        # Layout tight
+        fig.tight_layout()
+
+        # Save
+        path = os.path.join(output_dir, '00_LAYMAN_reality_vs_prediction.png')
+        fig.savefig(path, dpi=300, bbox_inches='tight')
+        plt.close(fig)
+        
+        print(f"✓ Saved Layman Chart: {path}")
+
     def visualize_predictions(self, output_dir='predictive_charts'):
         if self.lr_model is None or self.dt_model is None:
             print("✗ Please train both models first")
@@ -1686,6 +1756,9 @@ if __name__ == "__main__":
                 
                 print("\n=== Generating Predictive Visualizations ===")
                 saved_charts = predictor.visualize_predictions()
+                
+                # --- CALLING LAYMAN CHART ---
+                predictor.visualize_layman_comparison()
                 
                 print("\n✓ Predictive analysis complete!")
                 

@@ -162,6 +162,127 @@
       </div>
     </header>
 
+    <section id="dataset" class="py-20 bg-slate-50">
+      <div class="container mx-auto px-6">
+        <div class="max-w-4xl mx-auto text-center mb-16">
+          <h2 class="text-3xl font-bold text-slate-900 mb-4">
+            Dataset & Description
+          </h2>
+          <p class="text-slate-600 text-lg leading-relaxed">
+            The core data set is related to the two-year historical log
+            corresponding to years 2011 and 2012 from Capital Bikeshare system,
+            Washington D.C., USA. Bike-sharing systems function as a virtual
+            sensor network, explicitly recording travel duration and position.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <div>
+            <h3
+              class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"
+            >
+              <i class="fa-solid fa-database text-teal-500"></i>
+              Data Source & Context
+            </h3>
+            <div class="prose text-slate-600 leading-relaxed mb-6">
+              <p class="mb-4">
+                Bike sharing systems are a new generation of traditional bike
+                rentals where the whole process from membership, rental, and
+                return has become automatic. Through these systems, a user is
+                able to easily rent a bike from a particular position and return
+                it at another position.
+              </p>
+              <p>
+                The rental process is highly correlated to environmental and
+                seasonal settings such as weather conditions, precipitation, and
+                day of the week. We utilized the
+                <code class="bg-slate-100 px-2 py-0.5 rounded text-teal-700"
+                  >hour.csv</code
+                >
+                file, which contains bike sharing counts aggregated on an hourly
+                basis, totaling 17,379 records.
+              </p>
+            </div>
+            <div
+              class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm text-slate-500"
+            >
+              <span class="font-semibold text-slate-700">Attribution:</span>
+              Hadi Fanaee-T, Laboratory of Artificial Intelligence and Decision
+              Support (LIAAD), University of Porto.
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200">
+            <div
+              class="p-4 border-b border-slate-100 bg-slate-50 font-bold text-slate-700 flex justify-between items-center"
+            >
+              <span>Key Variables</span>
+              <span class="text-xs font-normal text-slate-500"
+                >From Readme.txt</span
+              >
+            </div>
+            <div class="divide-y divide-slate-100">
+              <div class="p-4 flex gap-4">
+                <div class="w-24 flex-shrink-0 font-mono text-teal-600 text-sm">
+                  cnt
+                </div>
+                <div class="text-sm text-slate-600">
+                  Count of total rental bikes including both casual and
+                  registered users.
+                </div>
+              </div>
+              <div class="p-4 flex gap-4">
+                <div class="w-24 flex-shrink-0 font-mono text-teal-600 text-sm">
+                  season
+                </div>
+                <div class="text-sm text-slate-600">
+                  Season encoding: 1:spring, 2:summer, 3:fall, 4:winter.
+                </div>
+              </div>
+              <div class="p-4 flex gap-4">
+                <div class="w-24 flex-shrink-0 font-mono text-teal-600 text-sm">
+                  weathersit
+                </div>
+                <div class="text-sm text-slate-600">
+                  <ul class="list-disc pl-4 space-y-1">
+                    <li>1: Clear, Few clouds, Partly cloudy</li>
+                    <li>2: Mist + Cloudy, Mist + Broken clouds</li>
+                    <li>3: Light Snow, Light Rain + Thunderstorm</li>
+                    <li>4: Heavy Rain + Ice Pallets + Thunderstorm + Mist</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="p-4 flex gap-4">
+                <div class="w-24 flex-shrink-0 font-mono text-teal-600 text-sm">
+                  temp
+                </div>
+                <div class="text-sm text-slate-600">
+                  Normalized temperature in Celsius. The values are divided by
+                  41 (max).
+                </div>
+              </div>
+              <div class="p-4 flex gap-4">
+                <div class="w-24 flex-shrink-0 font-mono text-teal-600 text-sm">
+                  hum
+                </div>
+                <div class="text-sm text-slate-600">
+                  Normalized humidity. The values are divided by 100 (max).
+                </div>
+              </div>
+              <div class="p-4 flex gap-4">
+                <div class="w-24 flex-shrink-0 font-mono text-teal-600 text-sm">
+                  windspeed
+                </div>
+                <div class="text-sm text-slate-600">
+                  Normalized wind speed. The values are divided by 67 (max).
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="bg-slate-900 text-white py-12">
       <div class="container mx-auto px-6">
         <div
@@ -473,6 +594,92 @@
           </p>
         </div>
 
+        <div class="mb-12">
+          <h3
+            class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2"
+          >
+            <i class="fa-solid fa-book-open text-teal-500"></i> Theoretical
+            Framework
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+              class="group bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-teal-200 hover:shadow-lg transition-all duration-300"
+            >
+              <div
+                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-teal-600 text-lg shadow-sm mb-4 group-hover:scale-110 transition-transform"
+              >
+                <i class="fa-solid fa-clock"></i>
+              </div>
+              <h4 class="font-bold text-slate-800 mb-2">
+                Temporal Patterns Theory
+              </h4>
+              <p class="text-sm text-slate-600 leading-relaxed">
+                This theory explains the regular cyclic variations in mobility
+                patterns across different time intervals. In bike sharing
+                systems, temporal variations, such as hourly, daily, or weekly
+                fluctuations, indicate how urban users align their trips with
+                work schedules, leisure time, and environmental conditions. A
+                study made by Kinoshita et al. (2024) found that weekday usage
+                is dominated by commuting peaks, whereas weekends exhibit
+                recreational activity patterns across multiple global cities.
+                Such findings underscore the temporal regularity of bike usage
+                behavior in response to human routine and urban rhythm.
+              </p>
+            </div>
+            <div
+              class="group bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-teal-200 hover:shadow-lg transition-all duration-300"
+            >
+              <div
+                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-teal-600 text-lg shadow-sm mb-4 group-hover:scale-110 transition-transform"
+              >
+                <i class="fa-solid fa-temperature-arrow-up"></i>
+              </div>
+              <h4 class="font-bold text-slate-800 mb-2">
+                Weather-Demand Theory
+              </h4>
+              <p class="text-sm text-slate-600 leading-relaxed">
+                This theory highlights the strong dependency of active mobility
+                behavior on weather variability. Variations in temperature,
+                humidity, and precipitation change the perceived cost and
+                physical effort associated with cycling, therefore influencing
+                both casual and registered bike-sharing users. Empirical
+                analyses have shown that extreme heat and cold can reduce trip
+                frequency, while innovations such as e-bikes help mitigate these
+                effects by lowering physical exertion barriers (Zheng et al.,
+                2024). In conclusion, weather not only modulates total ridership
+                but also reflects wider adaptive patterns within urban
+                transportation systems.
+              </p>
+            </div>
+            <div
+              class="group bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-teal-200 hover:shadow-lg transition-all duration-300"
+            >
+              <div
+                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-teal-600 text-lg shadow-sm mb-4 group-hover:scale-110 transition-transform"
+              >
+                <i class="fa-solid fa-users"></i>
+              </div>
+              <h4 class="font-bold text-slate-800 mb-2">
+                User Segmentation Theory
+              </h4>
+              <p class="text-sm text-slate-600 leading-relaxed">
+                This theory emphasizes that bike-sharing participants cannot be
+                treated as a single uniform population. Instead, usage patterns
+                diverge across user types, such as casual, registered, and
+                high-frequency riders, depending on subfactors including age,
+                gender, income, and trip purpose. Winters et al. (2019)
+                demonstrated that high-frequency “super-users” in Vancouver’s
+                public bike share program showed distinct demographic and
+                mobility profiles compared to regular users, highlighting that
+                intensity of use reflects deeper socioeconomic and spatial
+                characteristics. Applying this framework helps the researchers
+                interpret aggregate rental data as the outcome of multiple
+                overlapping behavioral groups.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div class="chart-card">
             <div
@@ -634,7 +841,7 @@
             />
             <div class="p-4 text-sm text-slate-600">
               As windspeed increases, rentals tend to decrease
-              slightly—suggesting wind is a mild deterrent.
+              slightly,suggesting wind is a mild deterrent.
             </div>
           </div>
           <div class="chart-card">
@@ -706,6 +913,85 @@
             <span class="font-bold text-teal-600">Temperature (0.40)</span>
             showed the strongest positive correlations.
           </p>
+        </div>
+
+        <div class="mb-12">
+          <h3
+            class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2"
+          >
+            <i class="fa-solid fa-book-open text-teal-500"></i> Theoretical
+            Framework
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+              class="group bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-teal-200 hover:shadow-lg transition-all duration-300"
+            >
+              <div
+                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-teal-600 text-lg shadow-sm mb-4 group-hover:scale-110 transition-transform"
+              >
+                <i class="fa-solid fa-cloud-sun"></i>
+              </div>
+              <h4 class="font-bold text-slate-800 mb-2">
+                Environmental Determinism Theory
+              </h4>
+              <p class="text-sm text-slate-600 leading-relaxed">
+                Our analysis is based on the theory of environmental
+                determinism, which suggests that environmental factors,
+                particularly weather variables, directly affect how people
+                engage in outdoor activities and choose their modes of
+                transportation. This theory assumes that the weather creates
+                physical comfort or discomfort, which can affect the
+                individual’s willingness to use a bike. In the context of
+                bike-sharing, we expect that weather factors such as
+                temperature, humidity, and wind speed will show correlations
+                with rental demands.
+              </p>
+            </div>
+            <div
+              class="group bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-teal-200 hover:shadow-lg transition-all duration-300"
+            >
+              <div
+                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-teal-600 text-lg shadow-sm mb-4 group-hover:scale-110 transition-transform"
+              >
+                <i class="fa-solid fa-clock"></i>
+              </div>
+              <h4 class="font-bold text-slate-800 mb-2">
+                Temporal Pattern Theory
+              </h4>
+              <p class="text-sm text-slate-600 leading-relaxed">
+                This analysis is also based on temporal pattern theory.
+                According to this theory, time-based factors can create
+                systematic patterns in transportation demand due to recurring
+                human activities, particularly work commuting and leisure
+                patterns. Having this theory referenced, we hypothesize that
+                temporal variables such as hour of day, day of the week, and
+                season will show distinct correlation patterns with rental
+                demand.
+              </p>
+            </div>
+            <div
+              class="group bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-teal-200 hover:shadow-lg transition-all duration-300"
+            >
+              <div
+                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-teal-600 text-lg shadow-sm mb-4 group-hover:scale-110 transition-transform"
+              >
+                <i class="fa-solid fa-users"></i>
+              </div>
+              <h4 class="font-bold text-slate-800 mb-2">
+                User Behavior Segmentation Theory
+              </h4>
+              <p class="text-sm text-slate-600 leading-relaxed">
+                The study is also grounded in user behavior segmentation theory.
+                This theory proposes that various groups of users exhibit unique
+                behaviors and react in different ways to environmental and
+                time-related factors. We hypothesized that casual and registered
+                users would display distinct correlation patterns, with
+                registered users showing consistent commuting behavior, while
+                casual users are more affected by weather conditions and
+                leisure-related time periods.
+              </p>
+            </div>
+          </div>
         </div>
 
         <section id="pearson" class="pb-20">
@@ -843,7 +1129,7 @@
                 demand, but it does
                 <span class="font-semibold">not prove causation</span>. Pearson
                 specifically captures <span class="font-semibold">linear</span>
-                patterns—so some relationships may be real but appear weaker if
+                patterns, so some relationships may be real but appear weaker if
                 they are non-linear.
               </p>
             </div>
@@ -1136,6 +1422,82 @@
           </p>
         </div>
 
+        <div class="max-w-6xl mx-auto mb-16 text-left">
+          <h3
+            class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2"
+          >
+            <i class="fa-solid fa-book-open text-teal-500"></i> Theoretical
+            Framework
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+              class="group bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-teal-200 hover:shadow-lg transition-all duration-300"
+            >
+              <div
+                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-teal-600 text-lg shadow-sm mb-4 group-hover:scale-110 transition-transform"
+              >
+                <i class="fa-solid fa-chart-line"></i>
+              </div>
+              <h4 class="font-bold text-slate-800 mb-2">
+                Demand Forecasting Theory
+              </h4>
+              <p class="text-sm text-slate-600 leading-relaxed">
+                Our analysis is grounded on demand forecasting theory, a theory
+                that posits that consumer demand follows predictable patterns
+                based on multiple factors (Makridakis, Wheelwright, & Hyndman,
+                1984). The theory assumes that while random fluctuations do
+                occur, much of consumer behavior follows a consistent structure
+                and therefore can be statistically modeled. In the context of
+                bike-sharing, we believe these factors to be dependent on time,
+                temperature, and seasonality.
+              </p>
+            </div>
+            <div
+              class="group bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-teal-200 hover:shadow-lg transition-all duration-300"
+            >
+              <div
+                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-teal-600 text-lg shadow-sm mb-4 group-hover:scale-110 transition-transform"
+              >
+                <i class="fa-solid fa-brain"></i>
+              </div>
+              <h4 class="font-bold text-slate-800 mb-2">
+                Behavioral Decision Theory
+              </h4>
+              <p class="text-sm text-slate-600 leading-relaxed">
+                This theory posits that consumer behavior, including travel
+                behavior, is greatly influenced by environmental conditions
+                (Thaler & Sunstein, 2008). We hypothesize that the main
+                environmental conditions that drive rentals are temperature and
+                humidity. This hypothesis is supported by Fishman’s 2016
+                empirical study on BikeShare programs (BSP), which finds that
+                BSPs are busiest during the warmer months.
+              </p>
+            </div>
+            <div
+              class="group bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-teal-200 hover:shadow-lg transition-all duration-300"
+            >
+              <div
+                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-teal-600 text-lg shadow-sm mb-4 group-hover:scale-110 transition-transform"
+              >
+                <i class="fa-solid fa-person-biking"></i>
+              </div>
+              <h4 class="font-bold text-slate-800 mb-2">
+                Transportation Mode Choice Theory
+              </h4>
+              <p class="text-sm text-slate-600 leading-relaxed">
+                The study is also based on the transportation mode choice
+                theory. According to this theory, individuals select their mode
+                of transport based on their perceived utility in a particular
+                situation. Drawing from this, we hypothesize that bike share
+                users can be roughly divided into two groups: commuting users,
+                whose choices are consistent and reflect utilitarian use (using
+                bikes to cycle to work), and leisure users, whose behavior is
+                more greatly affected by weather and temperature conditions.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div
           class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-4xl mx-auto"
         >
@@ -1192,6 +1554,28 @@
         </div>
 
         <div
+          class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 max-w-5xl mx-auto mb-16"
+        >
+          <div class="text-center mb-6">
+            <h4 class="text-xl font-bold text-slate-800">
+              Reality Check: Actual vs. AI Prediction
+            </h4>
+            <p class="text-slate-600 mt-2">
+              To understand how the model performs in the real world, we
+              compared actual rental counts against our AI's predictions for
+              specific hours.
+              <span class="text-teal-600 font-semibold"
+                >The Green bars (AI) closely match the Gray bars (Reality)</span
+              >, visually confirming the high accuracy.
+            </p>
+          </div>
+          <img
+            src="predictive_charts/00_LAYMAN_reality_vs_prediction.png"
+            alt="Layman Reality vs Prediction Chart"
+            class="w-full h-auto rounded-lg"
+          />
+        </div>
+        <div
           class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 max-w-4xl mx-auto mb-16"
         >
           <h4 class="text-center font-bold text-slate-700 mb-4">
@@ -1215,6 +1599,10 @@
               class="w-full"
               alt="LR Pred"
             />
+            <div class="p-4 text-sm text-slate-600">
+              Shows a loose, scattered pattern. The model struggles to capture
+              high-demand periods, often underpredicting peaks.
+            </div>
           </div>
           <div class="chart-card ring-2 ring-teal-500">
             <div
@@ -1227,6 +1615,11 @@
               class="w-full"
               alt="DT Pred"
             />
+            <div class="p-4 text-sm text-slate-600">
+              Points cluster tightly along the diagonal red line (perfect
+              prediction), demonstrating the model's ability to capture complex,
+              non-linear demand patterns.
+            </div>
           </div>
 
           <div class="chart-card">
@@ -1238,6 +1631,11 @@
               class="w-full"
               alt="LR Res"
             />
+            <div class="p-4 text-sm text-slate-600">
+              The fanning pattern (heteroscedasticity) indicates the model's
+              error grows as rental counts increase. It fundamentally fails to
+              model peak demand.
+            </div>
           </div>
           <div class="chart-card">
             <div
@@ -1250,6 +1648,10 @@
               class="w-full"
               alt="DT Res"
             />
+            <div class="p-4 text-sm text-slate-600">
+              Errors are concentrated near zero (the red line) across the entire
+              range of predicted values, indicating consistent accuracy.
+            </div>
           </div>
 
           <div class="chart-card">
@@ -1261,6 +1663,10 @@
               class="w-full"
               alt="LR Dist"
             />
+            <div class="p-4 text-sm text-slate-600">
+              A flat, wide distribution shows that large errors (off by 200+
+              rentals) are common.
+            </div>
           </div>
           <div class="chart-card">
             <div
@@ -1273,6 +1679,10 @@
               class="w-full"
               alt="DT Dist"
             />
+            <div class="p-4 text-sm text-slate-600">
+              A sharp peak at zero confirms that most predictions are extremely
+              accurate, with very few large errors.
+            </div>
           </div>
 
           <div class="chart-card">
@@ -1284,6 +1694,11 @@
               class="w-full"
               alt="Importance"
             />
+            <div class="p-4 text-sm text-slate-600">
+              <b>Hour</b> is the single most critical predictor, followed by
+              <b>Temperature</b> and <b>Year</b>. Variables like Windspeed and
+              Holiday have minimal impact.
+            </div>
           </div>
           <div class="chart-card">
             <div class="p-3 bg-slate-100 font-bold text-center text-sm">
@@ -1294,6 +1709,11 @@
               class="w-full"
               alt="Comparison"
             />
+            <div class="p-4 text-sm text-slate-600">
+              Decision Tree beats Linear Regression on every metric: it explains
+              ~81% of the variance (R²) compared to only ~35% for the linear
+              model.
+            </div>
           </div>
 
           <div class="chart-card">
@@ -1305,6 +1725,11 @@
               class="w-full"
               alt="Err Hour"
             />
+            <div class="p-4 text-sm text-slate-600">
+              Linear Regression errors spike massively during commute hours (8
+              AM & 5 PM). The Decision Tree handles these non-linear peaks
+              effortlessly.
+            </div>
           </div>
           <div class="chart-card">
             <div class="p-3 bg-slate-100 font-bold text-center text-sm">
@@ -1315,6 +1740,11 @@
               class="w-full"
               alt="Err Season"
             />
+            <div class="p-4 text-sm text-slate-600">
+              The Linear model struggles most in Fall and Summer (high demand
+              seasons). The Decision Tree maintains consistent accuracy
+              year-round.
+            </div>
           </div>
           <div class="chart-card">
             <div class="p-3 bg-slate-100 font-bold text-center text-sm">
@@ -1325,6 +1755,11 @@
               class="w-full"
               alt="Err Weather"
             />
+            <div class="p-4 text-sm text-slate-600">
+              Both models struggle slightly more with heavy rain (rare events),
+              but the Decision Tree reduces the average error significantly
+              across all conditions.
+            </div>
           </div>
           <div class="chart-card">
             <div class="p-3 bg-slate-100 font-bold text-center text-sm">
@@ -1335,6 +1770,10 @@
               class="w-full"
               alt="Combined"
             />
+            <div class="p-4 text-sm text-slate-600">
+              Side-by-side proof: The Linear model (left) is a 'cloud' of
+              guesses; the Decision Tree (right) is a precise instrument.
+            </div>
           </div>
         </div>
       </div>
@@ -1354,7 +1793,7 @@
             >
               <pre><code class="language-python"><span class="code-keyword">def</span> <span class="code-func">compute_basic_statistics</span>(self):
     numeric_cols = [<span class="code-string">'total_rentals'</span>, <span class="code-string">'casual_users'</span>, <span class="code-string">'registered_users'</span>, 
-                   <span class="code-string">'temp'</span>, <span class="code-string">'feeling_temperature'</span>, <span class="code-string">'humidity'</span>, <span class="code-string">'windspeed'</span>]
+                    <span class="code-string">'temp'</span>, <span class="code-string">'feeling_temperature'</span>, <span class="code-string">'humidity'</span>, <span class="code-string">'windspeed'</span>]
     rows = []
     <span class="code-keyword">for</span> col <span class="code-keyword">in</span> numeric_cols:
         s = self.data[col].dropna()
@@ -1380,13 +1819,11 @@
               class="bg-black/50 p-4 rounded-xl border border-slate-700 font-mono text-xs overflow-x-auto shadow-xl h-64"
             >
               <pre><code class="language-python"><span class="code-keyword">def</span> <span class="code-func">compute_correlations</span>(self):
-    <span class="code-comment"># Calculate Pearson correlation coefficient</span>
     self.correlation_matrix = self.data.corr(method=<span class="code-string">'pearson'</span>)
     <span class="code-keyword">return</span> self.correlation_matrix
 
 <span class="code-keyword">def</span> <span class="code-func">find_strongest_correlations</span>(self, threshold=0.3):
     target = <span class="code-string">'total_rentals'</span>
-    <span class="code-comment"># Filter for correlations stronger than threshold (0.3)</span>
     corr_series = self.correlation_matrix[target].drop(target).abs()
     strong_corr = corr_series[corr_series > threshold]
     <span class="code-keyword">return</span> strong_corr.sort_values(ascending=False)</code></pre>
@@ -1423,13 +1860,11 @@
               class="bg-black/50 p-4 rounded-xl border border-slate-700 font-mono text-xs overflow-x-auto shadow-xl h-64"
             >
               <pre><code class="language-python"><span class="code-keyword">def</span> <span class="code-func">train_decision_tree</span>(self, max_depth=10):
-    <span class="code-comment"># Initialize with optimized depth</span>
     self.dt_model = DecisionTreeRegressor(max_depth=max_depth, random_state=42)
     self.dt_model.fit(self.X_train, self.y_train)
     
     y_pred_test = self.dt_model.predict(self.X_test)
     
-    <span class="code-comment"># Store performance metrics</span>
     self.results[<span class="code-string">'dt'</span>] = {
         <span class="code-string">'test_r2'</span>: r2_score(self.y_test, y_pred_test),
         <span class="code-string">'mae'</span>: mean_absolute_error(self.y_test, y_pred_test),
@@ -1448,7 +1883,7 @@
           Group 1 • Bike Sharing Analysis
         </p>
         <p class="text-slate-400 text-sm mt-2">
-          &copy; 2025 Midterm Project. All rights reserved.
+          &copy; 2025 Midterm Project.
         </p>
       </div>
     </footer>
