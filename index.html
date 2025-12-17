@@ -63,6 +63,7 @@
 
       .gradient-text {
         background: linear-gradient(135deg, #0f766e 0%, #0ea5e9 100%);
+        background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
@@ -97,6 +98,9 @@
           class="hidden md:flex space-x-8 text-sm font-semibold text-slate-600"
         >
           <a href="#home" class="hover:text-teal-600 transition">Overview</a>
+          <a href="#preprocessing" class="hover:text-teal-600 transition"
+            >Preprocessing</a
+          >
           <a href="#descriptive" class="hover:text-teal-600 transition"
             >Descriptive</a
           >
@@ -184,6 +188,174 @@
             <div class="text-4xl font-bold text-teal-400 mb-1">80.8%</div>
             <div class="text-xs uppercase tracking-widest text-slate-400">
               Model Accuracy (R²)
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="preprocessing" class="py-20 bg-white border-b border-slate-200">
+      <div class="container mx-auto px-6">
+        <div class="max-w-3xl mb-10">
+          <h2 class="text-3xl font-bold text-slate-900 mb-3">
+            Data Cleaning & Variables Selected
+          </h2>
+          <p class="text-slate-600 text-lg leading-relaxed">
+            Below is a plain-language summary of how we cleaned the dataset and which information we used
+            for each part of the analysis (descriptive, correlation, and prediction).
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+            <h3 class="text-xl font-bold text-slate-900 mb-4">
+              Data Cleaning (Comprehensive Preprocessing)
+            </h3>
+            <div class="text-sm text-slate-600 mb-4">
+              Output file:
+              <span class="font-semibold">MailigCruzGalopeTorrefrancaTamondong_CleanedDataset.csv</span>
+            </div>
+            <ol class="list-decimal pl-5 space-y-3 text-slate-700">
+              <li>
+                <span class="font-semibold">Handle missing values</span>:
+                remove rows missing key fields (rentals and basic weather), then fill any remaining missing
+                numeric values using a typical middle value (the median).
+              </li>
+              <li>
+                <span class="font-semibold">Remove duplicates</span>:
+                drop repeated rows so each record is counted once.
+              </li>
+              <li>
+                <span class="font-semibold">Handle extreme outliers</span>:
+                for total, casual, and registered rentals, unusually extreme values are limited (“capped”)
+                to a reasonable boundary so they don’t dominate the results.
+              </li>
+              <li>
+                <span class="font-semibold">Scale weather values if needed</span>:
+                temperature, “feels-like” temperature, humidity, and windspeed are only scaled if their
+                values are not already in a 0–1 range.
+              </li>
+              <li>
+                <span class="font-semibold">Fix data types</span>:
+                ensure time/category fields are stored as whole numbers and weather values as decimals.
+              </li>
+              <li>
+                <span class="font-semibold">Rename columns for clarity</span>:
+                convert abbreviated column names into clearer names (e.g., hour/month/year, total rentals,
+                humidity, weather situation).
+              </li>
+              <li>
+                <span class="font-semibold">Add readable labels</span>:
+                create text labels for season (Spring/Summer/Fall/Winter) and weather (Clear, Mist/Cloudy,
+                Light Rain/Snow, Heavy Rain/Snow).
+              </li>
+              <li>
+                <span class="font-semibold">Validate ranges</span>:
+                check that hour is between 0–23 and month is between 1–12.
+              </li>
+              <li>
+                <span class="font-semibold">Export the cleaned dataset</span>:
+                save the cleaned data to the output file shown above.
+              </li>
+            </ol>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-2xl p-6">
+            <h3 class="text-xl font-bold text-slate-900 mb-4">
+              Variables Selected (by Output CSV)
+            </h3>
+
+            <div class="space-y-5 text-slate-700">
+              <div>
+                <div class="font-semibold text-slate-900 mb-2">Descriptive Analysis</div>
+                <div class="text-sm text-slate-600 mb-2">
+                  Used to summarize patterns (by hour/day/month/season/weather) and compare groups.
+                </div>
+                <div class="space-y-2 text-sm">
+                  <div>
+                    <span class="font-semibold">What we measure:</span>
+                    <span class="ml-1 inline-flex flex-wrap gap-2">
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Total rentals</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Casual users</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Registered users</span>
+                    </span>
+                  </div>
+                  <div>
+                    <span class="font-semibold">Time factors:</span>
+                    <span class="ml-1 inline-flex flex-wrap gap-2">
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Hour</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Weekday</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Working day</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Month</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Season</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Year</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Holiday</span>
+                    </span>
+                  </div>
+                  <div>
+                    <span class="font-semibold">Weather factors:</span>
+                    <span class="ml-1 inline-flex flex-wrap gap-2">
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Weather situation</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Temperature</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Feels-like temperature</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Humidity</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Windspeed</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="border-t border-slate-200 pt-5">
+                <div class="font-semibold text-slate-900 mb-2">Correlation Analysis</div>
+                <div class="text-sm text-slate-600 mb-2">
+                  Used to check which factors move together with rentals (e.g., weather, time, and user types).
+                </div>
+                <div class="text-sm inline-flex flex-wrap gap-2">
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Temperature</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Feels-like temperature</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Humidity</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Windspeed</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Season</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Month</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Hour</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Weekday</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Holiday</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Working day</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Weather situation</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Casual users</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Registered users</span>
+                  <span class="px-2 py-1 bg-slate-100 rounded-full">Total rentals</span>
+                </div>
+              </div>
+
+              <div class="border-t border-slate-200 pt-5">
+                <div class="font-semibold text-slate-900 mb-2">Predictive Modeling</div>
+                <div class="text-sm text-slate-600 mb-2">
+                  Used to predict the number of rentals using time and weather information.
+                </div>
+                <div class="text-sm space-y-2">
+                  <div>
+                    <span class="font-semibold">Inputs used:</span>
+                    <span class="ml-1 inline-flex flex-wrap gap-2">
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Hour</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Weekday</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Working day</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Month</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Season</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Temperature</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Feels-like temperature</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Humidity</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Windspeed</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Weather situation</span>
+                      <span class="px-2 py-1 bg-slate-100 rounded-full">Holiday</span>
+                    </span>
+                  </div>
+                  <div>
+                    <span class="font-semibold">What we predict:</span>
+                    <span class="ml-1 px-2 py-1 bg-teal-50 text-teal-800 rounded-full">Total rentals</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
